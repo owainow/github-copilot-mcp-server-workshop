@@ -94,10 +94,7 @@ func azure functionapp publish mcp-workshop-func --typescript
 ```
 
 ### 4. Add AI Integration (Optional)
-```bash
-.\setup-azure-ai.ps1
-.\test-ai-integration.ps1
-```
+Follow **Part 5** of the workshop documentation in `docs/part-5-ai-integration.md` to set up Azure AI Foundry integration through the portal.
 
 ### 5. Connect to GitHub Copilot
 Add to VS Code settings.json:
@@ -166,9 +163,9 @@ az account set --subscription "your-subscription-id"
 │   └── utils/                     # Shared utilities
 ├── infra/                         # Azure infrastructure (Bicep)
 ├── tests/                         # Test suites
-├── test-workshop.ps1              # Comprehensive test script
+├── test-workshop.ps1              # Comprehensive workshop test script
 ├── test-ai-integration.ps1        # AI integration tests
-└── setup-azure-ai.ps1             # Azure AI setup automation
+└── test-all-tools.ps1             # Individual tool testing
 ```
 
 ## 🧪 Testing Your Setup

@@ -56,54 +56,15 @@ Example URL: `https://mcp-workshop-func.azurewebsites.net/api/mcp-server`
 
 ### 2. Configure MCP in VS Code
 
-#### Method 1: VS Code Settings UI (Recommended)
+#### Method 1: VS Code Settings UI
 
-1. **Open the Command Palette** (Ctrl+Shift+P)
-2. **Search for "MCP"** and select `MCP: Open User Configuration`
-3. **Add your server configuration** to the `mcp.json` file:
-
-```json
-{
-  "servers": {
-    "azure-mcp-server": {
-      "type": "http",
-      "url": "https://mcp-server-functions.azurewebsites.net/api/mcp-server"
-    }
-  }
-}
-```
-
-#### Method 2: VS Code Settings (Alternative)
-
-1. **Open VS Code Settings** (Ctrl+,)
-2. **Search for "mcp"**
-3. **Edit in settings.json**:
-
-```json
-{
-  "chat.mcp.servers": {
-    "azure-mcp-server": {
-      "type": "http", 
-      "url": "https://mcp-server-functions.azurewebsites.net/api/mcp-server"
-    }
-  }
-}
-```
-
-#### Step 3: Restart VS Code
-
-After configuring, restart VS Code to initialize the MCP server.
-
-#### Step 4: Verify Connection
-
-1. **Open the Command Palette** (Ctrl+Shift+P)
-2. **Run `MCP: List Servers`** - you should see "azure-mcp-server" listed
-3. **Check status** - it should show as "Running"
-4. **Test in Copilot Chat**:
-
-```
-What MCP servers do you have available?
-``` 
+1. Click on the tools Icon in your CoPilot Chat
+2. Click the "Add MCP Server" Icon in the top right corner of the tools box
+3. Select to connect to a remote MCP server using HTTP
+4. Pass in the URL of your function and press enter.
+5. Name the MCP server and select "Global".
+6. Review the created mcp.json and the status shown of the server. You should see it say "Running"
+7. Ask your copilot chat what MCP servers it has available, it should respond with your custom MCP server and the tools. 
 
 Expected output (Something similar):
 ```
@@ -115,6 +76,7 @@ MCP Servers:
 ```
 
 ## Testing GitHub Copilot Integration
+Open a new VS Code window and open GH Copilot
 
 ### 1. Basic Tool Discovery
 
@@ -139,6 +101,8 @@ Copilot should:
 
 ### 3. Dependency Analysis Test
 
+If you have an example project.json bring that in or ask copilot to create one for you. 
+
 In a project with package.json, ask:
 ```
 Check my project dependencies for security issues and updates
@@ -151,15 +115,7 @@ Copilot should:
 
 ### 4. Code Review Test
 
-With some JavaScript code open, ask:
-```
-Review this code for quality and potential issues
-```
-
-Copilot should:
-1. Use the ai_code_review tool
-2. Analyze your code (mock analysis initially)
-3. Provide feedback on code quality
+Our code review tool isn't setup fully yet as we have not finished our Azure setup yet, specifically for our AI endpoint so we will test this later.
 
 ## Advanced Usage Patterns
 
@@ -237,7 +193,7 @@ You can explicitly request tool usage:
 
 ### Performance Issues
 
-1. **Cold starts**: First tool call may be slow (Azure Functions cold start)
+1. **Cold starts**: First tool call may be slow (Azure Functions cold start although with flex consumption functions the startup time has been reduced to ms)
 2. **Network latency**: Consider deploying closer to your location
 3. **Tool complexity**: AI tools will be slower than educational tools
 
@@ -294,7 +250,7 @@ You can explicitly request tool usage:
 GitHub Copilot is now using your custom MCP tools! Next, let's add real AI capabilities in [Part 5: AI Integration](part-5-ai-integration.md).
 
 ## Workshop Progress
-
+s
 ✅ **Part 1**: Setup and Understanding  
 ✅ **Part 2**: Local Development  
 ✅ **Part 3**: Azure Deployment  
