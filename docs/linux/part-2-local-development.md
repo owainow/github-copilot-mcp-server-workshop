@@ -102,62 +102,6 @@ npm install
 cp local.settings.json.example local.settings.json
 ```
 
-### 2. Configure Environment Variables
-
-Edit the `local.settings.json` file:
-
-```bash
-# Edit using your preferred editor
-code local.settings.json
-# Or use nano/vim
-nano local.settings.json
-```
-
-Update the content to:
-```json
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "",
-    "FUNCTIONS_WORKER_RUNTIME": "node",
-    "ENABLE_AI_TOOL": "false",
-    "AZURE_SUBSCRIPTION_ID": "your-subscription-id-here",
-    "AZURE_FUNCTION_APP_NAME": "mcp-server-functions-your-name",
-    "AZURE_REGION": "eastus"
-  }
-}
-```
-
-**How to get your subscription ID:**
-```bash
-az account show --query id --output tsv
-```
-
-### 3. Verify Project Structure
-
-Your project should now have this structure:
-
-```
-serverless_mcp_on_functions_for_github_copilot/
-├── local.settings.json           # Local environment configuration
-├── local.settings.json.example   # Example environment file
-├── src/
-│   ├── functions/               # Azure Functions
-│   │   └── mcp-server.ts       # Main MCP endpoint
-│   ├── mcp/                    # MCP protocol implementation
-│   │   ├── server.ts           # MCP server logic
-│   │   └── types.ts            # MCP type definitions
-│   ├── tools/                  # Custom MCP tools
-│   │   ├── base-tool.ts        # Base tool interface
-│   │   ├── markdown-review.ts  # Markdown analysis tool
-│   │   ├── dependency-check.ts # Dependency analysis tool
-│   │   └── ai-code-review.ts   # AI-powered code review
-│   └── utils/                  # Shared utilities
-│       └── logger.ts           # Logging utilities
-├── infra/                      # Azure Bicep templates
-├── docs/                       # Workshop documentation
-└── tests/                      # Test files
-```
 
 ---
 
@@ -514,33 +458,6 @@ curl -X POST http://localhost:7071/api/mcp-server \
       }
     }
   }'
-```
-
----
-
-## 🎯 Workshop Testing Scripts (Linux/Codespaces)
-
-Use the provided bash test scripts for easier testing:
-
-```bash
-# Test all tools at once
-./test-workshop.sh --level local
-
-# Test specific functionality  
-./test-all-tools.sh
-
-# Test with verbose output
-./test-workshop.sh --level local --verbose
-```
-
-### 🌟 **Codespaces-Specific Testing**
-
-```bash
-# Test Codespaces environment
-./.devcontainer/test-environment.sh
-
-# Setup workshop tools (if needed)
-./.devcontainer/setup-workshop.sh
 ```
 
 ---

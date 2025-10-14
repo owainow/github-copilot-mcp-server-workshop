@@ -261,24 +261,6 @@ npm install
 npm run build
 ```
 
-### 3. Configure Local Environment
-
-```bash
-# Copy example settings
-cp local.settings.json.example local.settings.json
-
-# Edit the file to contain:
-cat > local.settings.json << EOF
-{
-  "IsEncrypted": false,
-  "Values": {
-    "AzureWebJobsStorage": "",
-    "FUNCTIONS_WORKER_RUNTIME": "node",
-    "ENABLE_AI_TOOL": "false"
-  }
-}
-EOF
-```
 
 ---
 
@@ -300,51 +282,6 @@ EOF
 └── tests/                  # Test files
 ```
 
----
-
-## 🔬 Quick Verification
-
-Test your setup:
-
-```bash
-# Verify project builds
-npm run build
-
-# Verify Azure Functions work
-func start --port 7071
-```
-
-You should see output indicating the function app is running. Press `Ctrl+C` to stop.
-
----
-
-## 🧪 Test Scripts (Linux/Bash)
-
-This workshop includes comprehensive bash test scripts:
-
-```bash
-# Test local development environment
-./test-workshop.sh --level local
-
-# Test individual tools
-./test-all-tools.sh
-
-# Test Azure deployment (after Part 3)
-./test-workshop.sh --level azure --url "https://your-app.azurewebsites.net"
-
-# Test AI integration (after Part 5)
-./test-ai-integration.sh
-```
-
-### 🌟 **Codespaces-Specific Features**
-
-```bash
-# Test environment validation (Codespaces-optimized)
-./.devcontainer/test-environment.sh
-
-# Use environment setup script if needed
-./.devcontainer/setup-workshop.sh
-```
 
 ---
 

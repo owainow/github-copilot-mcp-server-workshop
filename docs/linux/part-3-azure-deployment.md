@@ -20,34 +20,6 @@ In this part, we'll deploy our MCP server to Azure Functions. This enables our c
 - Azure subscription with appropriate permissions
 - Azure CLI installed and configured
 
-## Environment Setup
-
-### For GitHub Codespaces Users
-
-If you're using GitHub Codespaces, Azure CLI is already installed! You can proceed directly to the login step.
-
-### For Local Linux Users
-
-Install Azure CLI if needed:
-
-```bash
-# Ubuntu/Debian
-curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-
-# CentOS/RHEL/Fedora
-sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
-sudo dnf install -y azure-cli
-
-# macOS
-brew install azure-cli
-```
-
-Verify installation:
-
-```bash
-az --version
-```
-
 ## Azure Setup
 
 ### 1. Login to Azure
@@ -120,22 +92,7 @@ az functionapp create \
 
 **Note**: The FC1 SKU provides Flex Consumption which offers better cold start performance and more predictable pricing.
 
-## Deployment Process
-
-### 1. Prepare for Deployment
-
-Ensure your project is built and ready:
-
-```bash
-# Navigate to project root (adjust path if different)
-cd ~/mcp_projects/serverless_mcp_on_functions_for_github_copilot
-
-# Install dependencies and build
-npm install
-npm run build
-```
-
-### 2. Deploy Function App
+## Deploy Function App
 
 ```bash
 # Deploy to Azure Functions
