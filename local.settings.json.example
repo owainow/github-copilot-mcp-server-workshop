@@ -1,11 +1,16 @@
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "ENABLE_AI_TOOL": "false",
+    "MCP_SERVER_NAME": "GitHub Copilot MCP Server",
+    "MCP_SERVER_VERSION": "1.0.0",
+    "ENABLE_MARKDOWN_TOOL": "true",
+    "ENABLE_DEPENDENCY_TOOL": "true",
+    "ENABLE_AI_TOOL": "true",
     "AZURE_AI_ENDPOINT": "",
     "AZURE_AI_KEY": "",
-    "AZURE_AI_DEPLOYMENT": "gpt-35-turbo"
-  }
+    "MCP_LOG_LEVEL": "info"
+  },
+  "ConnectionStrings": {}
 }
