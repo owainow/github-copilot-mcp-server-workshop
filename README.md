@@ -219,7 +219,7 @@ az account set --subscription "your-subscription-id"
 
 ## � Workshop Navigation
 
-**Start Here**: [Part 1: Setup and Understanding](docs\part-1-understanding-mcp-and-setup.md)
+**Start Here**: [Part 1: Setup and Understanding](docs/part-1-understanding-mcp-and-setup.md)
 
 **Quick AI Setup**: [QUICKSTART-AI.md](QUICKSTART-AI.md) for fast Azure AI integration
 
@@ -243,4 +243,4 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-🚀 **Ready to extend GitHub Copilot with custom tools?** Start with [Part 1: Setup and Understanding](docs/part-1-setup-and-understanding.md)!
+🚀 **Ready to extend GitHub Copilot with custom tools?** Start with [Part 1: Setup and Understanding](docs/part-1-understanding-mcp-and-setup.md)!
