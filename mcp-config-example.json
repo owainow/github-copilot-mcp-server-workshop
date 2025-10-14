@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "azure-functions-mcp": {
+      "command": "node",
+      "args": [
+        "./node_modules/@modelcontextprotocol/server-fetch/dist/index.js"
+      ],
+      "env": {
+        "FETCH_BASE_URL": "https://your-function-app.azurewebsites.net/api",
+        "FETCH_TIMEOUT": "30000"
+      }
+    }
+  }
+}
