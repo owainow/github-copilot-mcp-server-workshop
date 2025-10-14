@@ -33,182 +33,41 @@ Key concepts:
 - **Tools**: Your `markdown_review`, `dependency_check`, and `ai_code_review` functions
 - **Protocol**: JSON-RPC 2.0 over HTTP
 
-### 2. Get Your Function URL
+### 2. Echo Your Function URL
 
-From Part 3, retrieve your Azure Function URL:
+From Part 3 we have already set our Functions env vars, echo your Function URL's:
 
 ```bash
-# If you haven't saved these variables, recreate them
-FUNCTION_APP="func-mcp-server-XXXX"  # Replace with your actual function app name
-RESOURCE_GROUP="rg-mcp-workshop"
+
 
 # Get the function URL
-FUNCTION_URL="https://$(az functionapp show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --query 'defaultHostName' --output tsv)/api/mcp"
-echo "Your MCP Server URL: $FUNCTION_URL"
-
-# Save for reuse
-echo "export FUNCTION_URL='$FUNCTION_URL'" >> ~/.bashrc
-source ~/.bashrc
+echo "Base URL: $FUNCTION_URL"
+echo "MCP Endpoint: $FUNCTION_URL/api/mcp"
 ```
-
-Save this URL - you'll need it for the configuration.
-
 ### 3. Configure VS Code Settings
 
 GitHub Copilot can be configured to use custom MCP servers through VS Code settings.
 
+
+### 2. Configure MCP in VS Code
+
 #### Method 1: VS Code Settings UI
 
-1. Open VS Code
-2. Go to **File > Preferences > Settings** (or `Ctrl+,`)
-3. Search for "copilot mcp"
-4. Look for **GitHub Copilot › Chat: MCP Servers** setting
-5. Add your server configuration
+1. Click on the tools Icon in your CoPilot Chat
+2. Click the "Add MCP Server" Icon in the top right corner of the tools box
+3. Select to connect to a remote MCP server using HTTP
+4. Pass in the URL of your function and press enter.
+5. Name the MCP server and select "Global".
+6. Review the created mcp.json and the status shown of the server. You should see it say "Running"
+7. Ask your copilot chat what MCP servers it has available, it should respond with your custom MCP server and the tools. 
 
-#### Method 2: Settings JSON
-
-Open VS Code settings JSON (`Ctrl+Shift+P` → "Preferences: Open Settings (JSON)") and add:
-
-```json
-{
-    "github.copilot.chat.mcpServers": {
-        "azure-mcp-workshop": {
-            "command": "node",
-            "args": ["-e", "require('http').createServer((req,res)=>{const chunks=[];req.on('data',chunk=>chunks.push(chunk));req.on('end',()=>{const body=chunks.length?Buffer.concat(chunks).toString():'';const url=require('url').parse(req.url,true);if(req.method==='GET'){res.writeHead(200,{'Content-Type':'application/json'});res.end(JSON.stringify({status:'MCP Proxy Active',target:process.env.MCP_TARGET_URL}));return;}if(req.method==='POST'){require('https').request(process.env.MCP_TARGET_URL,{method:'POST',headers:{'Content-Type':'application/json'}},proxyRes=>{let data='';proxyRes.on('data',chunk=>data+=chunk);proxyRes.on('end',()=>{res.writeHead(proxyRes.statusCode,proxyRes.headers);res.end(data);});}).on('error',err=>{res.writeHead(500);res.end(JSON.stringify({error:err.message}));}).end(body);return;}res.writeHead(405);res.end();});}).listen(process.env.PORT||3000)"],
-            "env": {
-                "MCP_TARGET_URL": "YOUR_FUNCTION_URL_HERE",
-                "PORT": "3001"
-            }
-        }
-    }
-}
-```
-
-Replace `YOUR_FUNCTION_URL_HERE` with your actual Azure Function URL.
-
-#### Method 3: Direct HTTP Configuration (Preferred)
-
-If GitHub Copilot supports direct HTTP MCP servers (check latest documentation), use:
-
-```json
-{
-    "github.copilot.chat.mcpServers": {
-        "azure-mcp-workshop": {
-            "url": "YOUR_FUNCTION_URL_HERE",
-            "description": "Azure Functions MCP Server with markdown review, dependency check, and AI code review tools"
-        }
-    }
-}
-```
-
-### 4. Alternative: Local MCP Proxy
-
-If direct HTTP configuration isn't supported, create a local proxy:
-
-Create `mcp-proxy.js`:
-
-```javascript
-const http = require('http');
-const https = require('https');
-const url = require('url');
-
-const TARGET_URL = process.env.MCP_TARGET_URL || 'YOUR_FUNCTION_URL_HERE';
-const PORT = process.env.PORT || 3001;
-
-const server = http.createServer((req, res) => {
-    // Enable CORS
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
-    }
-
-    if (req.method === 'GET') {
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ 
-            status: 'MCP Proxy Active', 
-            target: TARGET_URL,
-            proxy: `http://localhost:${PORT}`
-        }));
-        return;
-    }
-
-    if (req.method === 'POST') {
-        const chunks = [];
-        req.on('data', chunk => chunks.push(chunk));
-        req.on('end', () => {
-            const body = chunks.length ? Buffer.concat(chunks).toString() : '';
-            
-            const options = {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Content-Length': Buffer.byteLength(body)
-                }
-            };
-
-            const proxyReq = https.request(TARGET_URL, options, (proxyRes) => {
-                let data = '';
-                proxyRes.on('data', chunk => data += chunk);
-                proxyRes.on('end', () => {
-                    res.writeHead(proxyRes.statusCode, proxyRes.headers);
-                    res.end(data);
-                });
-            });
-
-            proxyReq.on('error', (err) => {
-                console.error('Proxy request error:', err);
-                res.writeHead(500, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ error: err.message }));
-            });
-
-            proxyReq.end(body);
-        });
-        return;
-    }
-
-    res.writeHead(405);
-    res.end();
-});
-
-server.listen(PORT, () => {
-    console.log(`MCP Proxy running on http://localhost:${PORT}`);
-    console.log(`Proxying to: ${TARGET_URL}`);
-});
-```
-
-Run the proxy:
-
-```bash
-# Set your function URL
-export MCP_TARGET_URL="$FUNCTION_URL"
-node mcp-proxy.js &
-
-# Or run in background with logging
-nohup node mcp-proxy.js > mcp-proxy.log 2>&1 &
-echo "MCP Proxy started with PID: $!"
-```
-
-Then configure VS Code to use `http://localhost:3001` as the MCP server.
-
-#### Stop the proxy when done:
-
-```bash
-# Find and stop the proxy process
-pkill -f "mcp-proxy.js"
-```
 
 ## Testing the Integration
 
 ### 1. Verify Copilot Connection
 
-1. **Restart VS Code** after changing settings
-2. **Open GitHub Copilot Chat** (`Ctrl+Shift+I` or click the chat icon)
-3. **Check for MCP server connection** in the chat interface
+1. **Open GitHub Copilot Chat** (`Ctrl+Shift+I` or click the chat icon)
+2. **Check for MCP server connection** in the chat interface
 
 ### 2. Test MCP Tools in Copilot
 
@@ -225,7 +84,6 @@ This is a sample document with some potential issues
 - Inconsistent capitalization
 - maybe some formatting problems
 
-Please use the markdown_review tool to analyze this content.
 ```
 
 #### Test 2: Dependency Check
@@ -233,7 +91,7 @@ Please use the markdown_review tool to analyze this content.
 Create a sample `package.json` and ask Copilot:
 
 ```
-@workspace Can you check the dependencies in my package.json file for security vulnerabilities and outdated packages? Use the dependency_check tool.
+@workspace Can you check the dependencies in my package.json file for security vulnerabilities and outdated packages?
 ```
 
 #### Test 3: AI Code Review
@@ -241,7 +99,7 @@ Create a sample `package.json` and ask Copilot:
 Share some code and ask:
 
 ```
-@workspace Can you review this TypeScript code for potential issues, security concerns, and best practices? Use the ai_code_review tool.
+@workspace Can you review this TypeScript code for potential issues, security concerns, and best practices?
 
 ```typescript
 function processUserData(data: any) {
@@ -264,6 +122,8 @@ When Copilot uses your MCP tools, you should see:
 3. **Structured suggestions** based on your tool outputs
 
 ## Advanced Configuration
+
+Here are some examples of advanced MCP CoPilot use:
 
 ### 1. Multiple MCP Servers
 
@@ -331,6 +191,71 @@ Configure specific tools with custom parameters:
     }
 }
 ```
+
+
+## Real-World Usage Examples
+
+### 1. Code Review Workflow
+
+Use Copilot with your MCP tools for comprehensive code reviews:
+
+```
+@workspace I'm working on a new feature. Can you:
+1. Review this TypeScript code using ai_code_review tool
+2. Check dependencies in package.json with dependency_check tool  
+3. Review the README.md file with markdown_review tool
+
+Please provide a comprehensive analysis with recommendations.
+```
+
+### 2. Documentation Improvement
+
+```
+@workspace Help me improve this documentation:
+1. Use markdown_review to identify formatting and content issues
+2. Suggest improvements based on the analysis
+3. Provide a revised version following best practices
+```
+
+### 3. Security Analysis
+
+```
+@workspace Perform a security analysis of my project:
+1. Use dependency_check to identify vulnerable packages
+2. Use ai_code_review to check for security issues in the code
+3. Provide prioritized recommendations for fixing issues
+```
+
+## Next Steps
+
+Congratulations! You've successfully integrated your custom MCP server with GitHub Copilot. Your AI assistant now has access to powerful custom tools for markdown review, dependency checking, and AI code review.
+
+### What We Accomplished
+
+- ✅ Configured GitHub Copilot to use custom MCP servers
+- ✅ Set up VS Code integration with your Azure Function
+- ✅ Tested MCP tool integration with Copilot
+- ✅ Learned troubleshooting techniques for integration issues
+- ✅ Implemented best practices for configuration and monitoring
+- ✅ Created automation scripts for workflow management
+- ✅ Optimized configuration for both local and Codespaces environments
+
+### Key Takeaways
+
+1. **MCP Protocol**: Provides a standardized way to extend AI capabilities
+2. **Azure Functions Integration**: Serverless hosting works excellently with MCP
+3. **VS Code Configuration**: Proper configuration is crucial for seamless integration
+4. **Tool Discovery**: Copilot automatically discovers and uses available tools
+5. **Error Handling**: Robust error handling ensures reliable tool usage
+6. **Cross-Platform**: Configuration works in both local Linux and GitHub Codespaces
+
+### Ready for Advanced AI Integration
+
+Your MCP server is now fully integrated with GitHub Copilot and ready for advanced AI scenarios. Continue to [Part 5: AI Integration](part-5-ai-integration.md) to explore Azure AI Foundry integration and advanced AI-powered workflows!
+
+---
+
+> **Navigation**: [Workshop Home](../README.md) | [Linux Path](README.md) | [← Part 3](part-3-azure-deployment.md) | [Part 5 →](part-5-ai-integration.md)
 
 ## Troubleshooting
 
@@ -591,240 +516,3 @@ INSTRUMENTATION_KEY=$(az monitor app-insights component show --app $APP_INSIGHTS
 
 az functionapp config appsettings set --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --settings "APPINSIGHTS_INSTRUMENTATIONKEY=$INSTRUMENTATION_KEY"
 ```
-
-## Real-World Usage Examples
-
-### 1. Code Review Workflow
-
-Use Copilot with your MCP tools for comprehensive code reviews:
-
-```
-@workspace I'm working on a new feature. Can you:
-1. Review this TypeScript code using ai_code_review tool
-2. Check dependencies in package.json with dependency_check tool  
-3. Review the README.md file with markdown_review tool
-
-Please provide a comprehensive analysis with recommendations.
-```
-
-### 2. Documentation Improvement
-
-```
-@workspace Help me improve this documentation:
-1. Use markdown_review to identify formatting and content issues
-2. Suggest improvements based on the analysis
-3. Provide a revised version following best practices
-```
-
-### 3. Security Analysis
-
-```
-@workspace Perform a security analysis of my project:
-1. Use dependency_check to identify vulnerable packages
-2. Use ai_code_review to check for security issues in the code
-3. Provide prioritized recommendations for fixing issues
-```
-
-## Monitoring and Analytics
-
-### 1. Usage Tracking
-
-Monitor how Copilot uses your MCP tools:
-
-```bash
-# Create a monitoring script
-cat > monitor-mcp-usage.sh << 'EOF'
-#!/bin/bash
-
-echo "MCP Server Monitoring Dashboard"
-echo "================================"
-
-# Check function app status
-echo "Function App Status:"
-az functionapp show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --query "state" --output tsv
-
-# Check recent invocations (requires Application Insights)
-echo "Recent Function Invocations:"
-az monitor app-insights query --app $APP_INSIGHTS --analytics-query "
-requests
-| where name == 'mcp'
-| summarize count() by bin(timestamp, 1h)
-| order by timestamp desc
-| take 24
-"
-
-# Check proxy status if running
-echo "Proxy Status:"
-if pgrep -f "mcp-proxy.js" > /dev/null; then
-    echo "✅ MCP Proxy is running (PID: $(pgrep -f 'mcp-proxy.js'))"
-    echo "📊 Proxy URL: http://localhost:3001"
-else
-    echo "❌ MCP Proxy is not running"
-fi
-
-# Test MCP endpoint
-echo "MCP Endpoint Test:"
-if curl -s "$FUNCTION_URL" > /dev/null; then
-    echo "✅ MCP endpoint is accessible"
-else
-    echo "❌ MCP endpoint is not accessible"
-fi
-EOF
-
-chmod +x monitor-mcp-usage.sh
-```
-
-### 2. Performance Metrics
-
-Track tool performance:
-
-```bash
-# Function execution metrics
-az monitor metrics list \
-  --resource "/subscriptions/$(az account show --query id --output tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Web/sites/$FUNCTION_APP" \
-  --metric "FunctionExecutionCount" \
-  --interval PT1H
-```
-
-### 3. Error Analysis
-
-Monitor and analyze errors:
-
-```bash
-# Check for errors in the last 24 hours
-az functionapp logs tail --name $FUNCTION_APP --resource-group $RESOURCE_GROUP | grep -i error
-
-# Or create an error monitoring script
-cat > check-mcp-errors.sh << 'EOF'
-#!/bin/bash
-echo "Checking MCP Server Errors..."
-echo "============================="
-
-# Check Azure Function errors
-echo "Azure Function Errors:"
-az functionapp logs tail --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --time-period last-24hours | grep -i error | tail -10
-
-# Check proxy errors if log file exists
-if [ -f mcp-proxy.log ]; then
-    echo "Proxy Errors:"
-    grep -i error mcp-proxy.log | tail -5
-fi
-EOF
-
-chmod +x check-mcp-errors.sh
-```
-
-## Automation Scripts
-
-Create helpful automation scripts for daily workflow:
-
-```bash
-# Create an all-in-one MCP management script
-cat > mcp-manager.sh << 'EOF'
-#!/bin/bash
-
-function start_proxy() {
-    if ! pgrep -f "mcp-proxy.js" > /dev/null; then
-        export MCP_TARGET_URL="$FUNCTION_URL"
-        nohup node mcp-proxy.js > mcp-proxy.log 2>&1 &
-        echo "✅ MCP Proxy started (PID: $!)"
-    else
-        echo "ℹ️  MCP Proxy already running"
-    fi
-}
-
-function stop_proxy() {
-    if pgrep -f "mcp-proxy.js" > /dev/null; then
-        pkill -f "mcp-proxy.js"
-        echo "✅ MCP Proxy stopped"
-    else
-        echo "ℹ️  MCP Proxy not running"
-    fi
-}
-
-function test_mcp() {
-    echo "Testing MCP endpoint..."
-    if curl -s "$FUNCTION_URL" | jq -e '.status' > /dev/null; then
-        echo "✅ MCP endpoint is working"
-    else
-        echo "❌ MCP endpoint test failed"
-    fi
-}
-
-function show_status() {
-    echo "MCP Server Status"
-    echo "================="
-    echo "Function URL: $FUNCTION_URL"
-    echo "Function App: $FUNCTION_APP"
-    echo "Resource Group: $RESOURCE_GROUP"
-    
-    if pgrep -f "mcp-proxy.js" > /dev/null; then
-        echo "Proxy Status: ✅ Running (PID: $(pgrep -f 'mcp-proxy.js'))"
-    else
-        echo "Proxy Status: ❌ Not running"
-    fi
-}
-
-case "$1" in
-    start)
-        start_proxy
-        ;;
-    stop)
-        stop_proxy
-        ;;
-    restart)
-        stop_proxy
-        sleep 2
-        start_proxy
-        ;;
-    test)
-        test_mcp
-        ;;
-    status)
-        show_status
-        ;;
-    *)
-        echo "Usage: $0 {start|stop|restart|test|status}"
-        exit 1
-        ;;
-esac
-EOF
-
-chmod +x mcp-manager.sh
-
-# Usage examples:
-# ./mcp-manager.sh start
-# ./mcp-manager.sh status
-# ./mcp-manager.sh test
-```
-
-## Next Steps
-
-Congratulations! You've successfully integrated your custom MCP server with GitHub Copilot. Your AI assistant now has access to powerful custom tools for markdown review, dependency checking, and AI code review.
-
-### What We Accomplished
-
-- ✅ Configured GitHub Copilot to use custom MCP servers
-- ✅ Set up VS Code integration with your Azure Function
-- ✅ Tested MCP tool integration with Copilot
-- ✅ Learned troubleshooting techniques for integration issues
-- ✅ Implemented best practices for configuration and monitoring
-- ✅ Created automation scripts for workflow management
-- ✅ Optimized configuration for both local and Codespaces environments
-
-### Key Takeaways
-
-1. **MCP Protocol**: Provides a standardized way to extend AI capabilities
-2. **Azure Functions Integration**: Serverless hosting works excellently with MCP
-3. **VS Code Configuration**: Proper configuration is crucial for seamless integration
-4. **Tool Discovery**: Copilot automatically discovers and uses available tools
-5. **Error Handling**: Robust error handling ensures reliable tool usage
-6. **Cross-Platform**: Configuration works in both local Linux and GitHub Codespaces
-
-### Ready for Advanced AI Integration
-
-Your MCP server is now fully integrated with GitHub Copilot and ready for advanced AI scenarios. Continue to [Part 5: AI Integration](part-5-ai-integration.md) to explore Azure AI Foundry integration and advanced AI-powered workflows!
-
----
-
-> **Navigation**: [Workshop Home](../README.md) | [Linux Path](README.md) | [← Part 3](part-3-azure-deployment.md) | [Part 5 →](part-5-ai-integration.md)

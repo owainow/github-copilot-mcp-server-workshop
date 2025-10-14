@@ -50,9 +50,30 @@ az account list --output table
 az account set --subscription "Your-Subscription-Name-Or-ID"
 ```
 
-## Resource Creation
+## Infrastructure Deployment
 
-### 1. Create Resource Group
+We'll use Infrastructure as Code (Bicep) to deploy all Azure resources with proper Flex Consumption configuration. This ensures consistent, repeatable deployments with all the latest Azure Functions features.
+
+### 1. Review Infrastructure Configuration
+
+First, let's examine our Bicep template that defines the infrastructure:
+
+```powershell
+# Review the main Bicep template
+Get-Content infra/main.bicep | Select-Object -First 30
+
+# Review the parameters file
+Get-Content infra/main.parameters.json
+```
+
+Our Bicep template includes:
+- **Flex Consumption Plan (FC1 SKU)** - Modern serverless hosting
+- **Storage Account** - With managed identity authentication (no connection strings!)
+- **Application Insights** - For comprehensive monitoring
+- **Proper RBAC** - Secure role assignments for managed identity
+- **Security Settings** - HTTPS only, latest TLS, secure storage configuration
+
+### 2. Create Resource Group
 
 ```powershell
 $resourceGroup = "rg-mcp-workshop"
@@ -61,39 +82,57 @@ $location = "East US"
 az group create --name $resourceGroup --location $location
 ```
 
-### 2. Create Storage Account
+### 3. Deploy Infrastructure with Bicep
 
-Azure Functions requires a storage account for metadata and triggers:
-
-```powershell
-$storageAccount = "stmcpworkshop$(Get-Random -Minimum 1000 -Maximum 9999)"
-
-az storage account create `
-  --name $storageAccount `
-  --location $location `
-  --resource-group $resourceGroup `
-  --sku Standard_LRS `
-  --allow-blob-public-access false
-```
-
-### 3. Create Function App
+Instead of creating resources manually, we'll deploy everything at once using our Bicep template:
 
 ```powershell
-$functionApp = "func-mcp-server-$(Get-Random -Minimum 1000 -Maximum 9999)"
-
-az functionapp create `
+# Deploy all infrastructure using Bicep
+az deployment group create `
   --resource-group $resourceGroup `
-  --consumption-plan-location $location `
-  --runtime node `
-  --runtime-version 20 `
-  --functions-version 4 `
-  --name $functionApp `
-  --storage-account $storageAccount `
-  --os-type Linux `
-  --sku FC1
+  --template-file infra/main.bicep `
+  --parameters '@infra/main.parameters.json'
+
+# This single command creates:
+# - Storage Account (with secure configuration)
+# - Flex Consumption Plan (FC1 SKU)
+# - Function App (with Node.js 20, Linux)
+# - Application Insights (for monitoring)
+# - All required role assignments (for managed identity)
 ```
 
-**Note**: The FC1 SKU provides Flex Consumption which offers better cold start performance and more predictable pricing.
+**Why Bicep over Manual Commands?**
+- ✅ **Consistent deployments** - Same configuration every time
+- ✅ **Modern features** - Properly configured Flex Consumption with managed identity
+- ✅ **Security by default** - No connection strings, proper RBAC
+- ✅ **Version controlled** - Infrastructure changes are tracked
+- ✅ **Easier maintenance** - Update template, redeploy
+
+### 4. Get Deployment Outputs
+
+After deployment, get the function app details:
+
+```powershell
+# Get the function app name and URL from deployment outputs
+$functionApp = az deployment group show `
+  --resource-group $resourceGroup `
+  --name main `
+  --query "properties.outputs.functionAppName.value" `
+  --output tsv
+
+$functionUrl = az deployment group show `
+  --resource-group $resourceGroup `
+  --name main `
+  --query "properties.outputs.functionAppUrl.value" `
+  --output tsv
+
+Write-Host "Function App: $functionApp"
+Write-Host "Function URL: $functionUrl"
+
+# Store these for later use
+$env:FUNCTION_APP = $functionApp
+$env:FUNCTION_URL = $functionUrl
+```
 
 ## Deployment Process
 

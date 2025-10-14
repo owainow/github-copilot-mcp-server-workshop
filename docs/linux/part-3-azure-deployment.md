@@ -47,9 +47,30 @@ az account list --output table
 az account set --subscription "Your-Subscription-Name-Or-ID"
 ```
 
-## Resource Creation
+## Infrastructure Deployment
 
-### 1. Create Resource Group
+We'll use Infrastructure as Code (Bicep) to deploy all Azure resources with proper Flex Consumption configuration. This ensures consistent, repeatable deployments with all the latest Azure Functions features.
+
+### 1. Review Infrastructure Configuration
+
+First, let's examine our Bicep template that defines the infrastructure:
+
+```bash
+# Review the main Bicep template
+cat infra/main.bicep | head -30
+
+# Review the parameters file
+cat infra/main.parameters.json
+```
+
+Our Bicep template includes:
+- **Flex Consumption Plan (FC1 SKU)** - Modern serverless hosting
+- **Storage Account** - With managed identity authentication (no connection strings!)
+- **Application Insights** - For comprehensive monitoring
+- **Proper RBAC** - Secure role assignments for managed identity
+- **Security Settings** - HTTPS only, latest TLS, secure storage configuration
+
+### 2. Create Resource Group
 
 ```bash
 RESOURCE_GROUP="rg-mcp-workshop"
@@ -58,67 +79,96 @@ LOCATION="eastus"
 az group create --name $RESOURCE_GROUP --location $LOCATION
 ```
 
-### 2. Create Storage Account
+### 3. Deploy Infrastructure with Bicep
 
-Azure Functions requires a storage account for metadata and triggers:
-
-```bash
-STORAGE_ACCOUNT="stmcpworkshop$RANDOM"
-
-az storage account create \
-  --name $STORAGE_ACCOUNT \
-  --location $LOCATION \
-  --resource-group $RESOURCE_GROUP \
-  --sku Standard_LRS \
-  --allow-blob-public-access false
-```
-
-### 3. Create Function App
+Instead of creating resources manually, we'll deploy everything at once using our Bicep template:
 
 ```bash
-FUNCTION_APP="func-mcp-server-$RANDOM"
-
-az functionapp create \
+# Deploy all infrastructure using Bicep
+az deployment group create \
   --resource-group $RESOURCE_GROUP \
-  --consumption-plan-location $LOCATION \
-  --runtime node \
-  --runtime-version 20 \
-  --functions-version 4 \
-  --name $FUNCTION_APP \
-  --storage-account $STORAGE_ACCOUNT \
-  --os-type Linux \
-  --sku FC1
+  --template-file infra/main.bicep \
+  --parameters @infra/main.parameters.json
+
+# This single command creates:
+# - Storage Account (with secure configuration)
+# - Flex Consumption Plan (FC1 SKU)
+# - Function App (with Node.js 20, Linux)
+# - Application Insights (for monitoring)
+# - All required role assignments (for managed identity)
 ```
 
-**Note**: The FC1 SKU provides Flex Consumption which offers better cold start performance and more predictable pricing.
+**Why Bicep over Manual Commands?**
+- ✅ **Consistent deployments** - Same configuration every time
+- ✅ **Modern features** - Properly configured Flex Consumption with managed identity
+- ✅ **Security by default** - No connection strings, proper RBAC
+- ✅ **Version controlled** - Infrastructure changes are tracked
+- ✅ **Easier maintenance** - Update template, redeploy
+
+### 4. Get Deployment Outputs
+
+After deployment, get the function app details:
+
+```bash
+# Get the function app name and URL from deployment outputs
+FUNCTION_APP=$(az deployment group show \
+  --resource-group $RESOURCE_GROUP \
+  --name main \
+  --query "properties.outputs.functionAppName.value" \
+  --output tsv)
+
+FUNCTION_URL=$(az deployment group show \
+  --resource-group $RESOURCE_GROUP \
+  --name main \
+  --query "properties.outputs.functionAppUrl.value" \
+  --output tsv)
+
+echo "Function App: $FUNCTION_APP"
+echo "Function URL: $FUNCTION_URL"
+
+# Store these for later use
+echo "export FUNCTION_APP='$FUNCTION_APP'" >> ~/.bashrc
+echo "export FUNCTION_URL='$FUNCTION_URL'" >> ~/.bashrc
+source ~/.bashrc
+```
 
 ## Deploy Function App
 
+Now deploy your application to the newly created infrastructure:
+
 ```bash
-# Deploy to Azure Functions
+# Build the application
+npm run build
+
+# Deploy to Azure Functions using the Bicep-created infrastructure
 func azure functionapp publish $FUNCTION_APP --typescript
 ```
 
 This command:
-- Builds your TypeScript code
+- Builds your TypeScript code (if not already done)
 - Packages the application
-- Uploads to Azure Functions
+- Uploads to the Azure Function App created by Bicep
 - Configures the runtime environment
+- Uses the secure managed identity configuration from our Bicep template
 
-### 3. Configure Function App Settings
+### Why This Works Better Than Manual Setup
+
+Our Bicep template configured the Function App with:
+
+1. **Secure Storage Access**: Uses managed identity instead of connection strings
+2. **Optimal Performance**: Flex Consumption (FC1) with 2GB memory allocation
+3. **Proper Monitoring**: Application Insights with connection string authentication
+4. **Security Settings**: HTTPS only, latest TLS, secure CORS configuration
+5. **Environment Variables**: Pre-configured MCP server settings
+
+### Verify Deployment Status
 
 ```bash
-# Set Node.js version
-az functionapp config appsettings set \
-  --name $FUNCTION_APP \
-  --resource-group $RESOURCE_GROUP \
-  --settings "WEBSITE_NODE_DEFAULT_VERSION=~20"
+# Check deployment status
+az functionapp show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --query "state" --output tsv
 
-# Enable detailed logging
-az functionapp config appsettings set \
-  --name $FUNCTION_APP \
-  --resource-group $RESOURCE_GROUP \
-  --settings "FUNCTIONS_WORKER_RUNTIME=node"
+# View function app configuration
+az functionapp config show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP
 ```
 
 ## Verification and Testing
@@ -126,13 +176,14 @@ az functionapp config appsettings set \
 ### 1. Get Function URLs
 
 ```bash
-# Get the function app hostname
-HOSTNAME=$(az functionapp show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --query "defaultHostName" --output tsv)
-
-# Display function URLs
+# The function app hostname is available from our deployment
 echo "Function App URLs:"
-echo "Base URL: https://$HOSTNAME"
-echo "MCP Endpoint: https://$HOSTNAME/api/mcp"
+echo "Base URL: $FUNCTION_URL"
+echo "MCP Endpoint: $FUNCTION_URL/api/mcp"
+
+# Or get it directly from Azure if needed
+HOSTNAME=$(az functionapp show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --query "defaultHostName" --output tsv)
+echo "Direct hostname: https://$HOSTNAME"
 ```
 
 ### 2. Test Deployed Functions
@@ -144,23 +195,14 @@ Create a bash test script for the deployed functions:
 cat > test-deployed-functions.sh << 'EOF'
 #!/bin/bash
 
-FUNCTION_URL="https://$HOSTNAME/api/mcp"
+# Use the function URL from our deployment
+FUNCTION_URL="$FUNCTION_URL/api/mcp"
 
 echo "Function URL: $FUNCTION_URL"
 echo "=================================="
 
-# Test 1: Health check
-echo "Testing health check..."
-if curl -s -o /dev/null -w "%{http_code}" "$FUNCTION_URL" | grep -q "200"; then
-    echo "✅ Health check successful"
-    curl -s "$FUNCTION_URL" | jq -r '.status'
-else
-    echo "❌ Health check failed"
-fi
 
-echo ""
-
-# Test 2: MCP initialize
+# Test 1: MCP initialize
 echo "Testing MCP initialize..."
 INIT_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
   -H "Content-Type: application/json" \
@@ -191,7 +233,7 @@ fi
 
 echo ""
 
-# Test 3: List tools
+# Test 2: List tools
 echo "Testing tools list..."
 TOOLS_RESPONSE=$(curl -s -X POST "$FUNCTION_URL" \
   -H "Content-Type: application/json" \
@@ -213,7 +255,7 @@ fi
 
 echo ""
 
-# Test 4: Call markdown_review tool
+# Test 3: Call markdown_review tool
 echo "Testing markdown_review tool..."
 MARKDOWN_CONTENT="# Test Document
 This is a test document with some issues.
@@ -252,10 +294,8 @@ chmod +x test-deployed-functions.sh
 ### 3. Monitor Function Execution
 
 ```bash
-# View recent logs
-az functionapp logs tail --name $FUNCTION_APP --resource-group $RESOURCE_GROUP
 
-# Or open Azure portal to the function app
+# Open Azure portal to the function app and view your function
 echo "View in Azure Portal:"
 echo "https://portal.azure.com/#@/resource/subscriptions/$(az account show --query id --output tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Web/sites/$FUNCTION_APP"
 ```
@@ -328,69 +368,51 @@ POST /api/mcp
 }
 ```
 
+## Next Steps
+
+Great! You've successfully deployed your MCP server to Azure Functions. Your custom tools are now running in the cloud and ready for integration.
+
+### What We Accomplished
+
+- ✅ Created Azure resources (Resource Group, Storage Account, Function App)
+- ✅ Deployed TypeScript Azure Functions to the cloud
+- ✅ Configured Function App with optimal settings (FC1 SKU, Node.js 20)
+- ✅ Tested deployed functions with HTTP requests
+- ✅ Set up monitoring and logging
+- ✅ Learned troubleshooting techniques
+- ✅ Created useful scripts for future deployments
+
+### Key Takeaways
+
+1. **Serverless Architecture**: Azure Functions provide scalable, cost-effective hosting for MCP servers
+2. **FC1 SKU Benefits**: Better cold start performance and predictable pricing
+3. **MCP Protocol**: Works seamlessly in serverless environments with proper error handling
+4. **Testing Strategy**: Comprehensive testing ensures reliability in production
+5. **Monitoring**: Application Insights provides valuable insights for optimization
+6. **Cross-Platform**: Works great in both local Linux environments and GitHub Codespaces
+
+### Ready for Copilot Integration
+
+Your function URLs are now ready for GitHub Copilot integration:
+- **Function App URL**: `https://{your-function-app}.azurewebsites.net`
+- **MCP Endpoint**: `https://{your-function-app}.azurewebsites.net/api/mcp`
+
+Continue to [Part 4: Copilot Integration](part-4-copilot-integration.md) to connect your deployed MCP server with GitHub Copilot!
+
+---
+
+> **Navigation**: [Workshop Home](../README.md) | [Linux Path](README.md) | [← Part 2](part-2-local-development.md) | [Part 4 →](part-4-copilot-integration.md)
+
 ## Troubleshooting
 
 ### Common Deployment Issues
 
-#### Issue: Deployment fails with "Storage account not found"
-
-**Solution**: Verify the storage account was created successfully:
-
-```bash
-az storage account show --name $STORAGE_ACCOUNT --resource-group $RESOURCE_GROUP
-```
-
-If missing, recreate:
-
-```bash
-az storage account create --name $STORAGE_ACCOUNT --resource-group $RESOURCE_GROUP --location $LOCATION --sku Standard_LRS
-```
-
-#### Issue: Function app returns 500 errors
-
-**Solution**: Check application logs:
-
-```bash
-# View detailed logs
-az functionapp logs tail --name $FUNCTION_APP --resource-group $RESOURCE_GROUP
-
-# Check deployment status
-az functionapp deployment list --name $FUNCTION_APP --resource-group $RESOURCE_GROUP
-```
-
-#### Issue: TypeScript compilation errors
-
-**Solution**: Ensure clean build before deployment:
-
-```bash
-# Clean and rebuild
-rm -rf dist
-npm run build
-
-# Verify dist folder contains compiled JavaScript
-ls -la dist/
-```
-
-#### Issue: Cold start performance
-
-**Solution**: The FC1 SKU should minimize cold starts, but you can also:
-
-1. **Use Application Insights** for monitoring:
-   ```bash
-   az functionapp config appsettings set --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --settings "APPINSIGHTS_INSTRUMENTATIONKEY=your-key"
-   ```
-
-2. **Monitor performance**:
-   ```bash
-   # Check function performance metrics
-   az monitor metrics list --resource "/subscriptions/$(az account show --query id --output tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Web/sites/$FUNCTION_APP" --metric "FunctionExecutionCount"
-   ```
 
 ### Debugging with Azure Portal
 
 1. **Navigate to Function App**:
    ```bash
-   echo "https://portal.azure.com/#@/resource/subscriptions/$(az account show --query id --output tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Web/sites/$FUNCTION_APP"
+   echo "Azure Portal: https://portal.azure.com/#@/resource/subscriptions/$(az account show --query id --output tsv)/resourceGroups/$RESOURCE_GROUP/providers/Microsoft.Web/sites/$FUNCTION_APP"
    ```
 
 2. **Check Function Execution**:
@@ -398,10 +420,14 @@ ls -la dist/
    - Use "Test/Run" to test directly in portal
    - View execution history in Monitor tab
 
-3. **Application Insights**:
-   - Enable Application Insights for detailed telemetry
+3. **Application Insights** (pre-configured by Bicep):
    - View performance metrics and error traces
    - Set up alerts for failures
+   - Check cold start performance
+
+4. **Managed Identity Status**:
+   - Go to Identity tab to verify system-assigned identity is enabled
+   - Check role assignments under Access control (IAM)
 
 ### Network and CORS Issues
 
@@ -441,54 +467,113 @@ func start --port 7071
 
 ### Function App Settings
 
-Optimize performance with these settings:
+Our Bicep template has already configured optimal settings, but you can verify them:
 
 ```bash
-# Set optimal Node.js settings
-az functionapp config appsettings set --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --settings \
-  "WEBSITE_NODE_DEFAULT_VERSION=~20" \
-  "FUNCTIONS_WORKER_RUNTIME=node" \
-  "SCM_DO_BUILD_DURING_DEPLOYMENT=true" \
-  "WEBSITE_RUN_FROM_PACKAGE=1"
+# View current app settings configured by Bicep
+az functionapp config appsettings list --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --output table
+
+# Key settings already configured:
+# - FUNCTIONS_EXTENSION_VERSION=~4
+# - Node.js 20 runtime
+# - Managed identity for storage access
+# - Application Insights connection
+# - CORS settings for GitHub integration
 ```
 
-### Monitoring Setup
+### Infrastructure Advantages
+
+Our Bicep-deployed infrastructure provides:
+
+1. **Flex Consumption (FC1)** benefits:
+   - Better cold start performance than Consumption plan
+   - 2GB memory allocation (vs 1.5GB in Consumption)
+   - More predictable performance
+
+2. **Managed Identity** security:
+   - No connection strings in configuration
+   - Automatic role-based access to storage
+   - Reduced security attack surface
+
+3. **Monitoring Ready**:
+   - Application Insights pre-configured
+   - Performance counters enabled
+   - Error tracking built-in
+
+### Advanced Configuration
+
+If you need to modify settings, update the Bicep template rather than using CLI:
 
 ```bash
-# Create Application Insights
-APP_INSIGHTS="ai-mcp-workshop"
-az monitor app-insights component create --app $APP_INSIGHTS --location $LOCATION --resource-group $RESOURCE_GROUP
+# Example: Update memory allocation in infra/main.bicep
+# scaleAndConcurrency: {
+#   maximumInstanceCount: 100
+#   instanceMemoryMB: 4096  // Increase from 2048 if needed
+# }
 
-# Get instrumentation key
-INSTRUMENTATION_KEY=$(az monitor app-insights component show --app $APP_INSIGHTS --resource-group $RESOURCE_GROUP --query "instrumentationKey" --output tsv)
-
-# Configure Function App to use Application Insights
-az functionapp config appsettings set --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --settings "APPINSIGHTS_INSTRUMENTATIONKEY=$INSTRUMENTATION_KEY"
+# Then redeploy
+az deployment group create --resource-group $RESOURCE_GROUP --template-file infra/main.bicep --parameters @infra/main.parameters.json
 ```
 
 ## Security Considerations
 
-### Function App Security
+### Built-in Security from Bicep Template
 
-1. **Authentication**: For production, consider enabling authentication:
+Our infrastructure deployment includes several security best practices:
+
+1. **Managed Identity**: No connection strings stored in configuration
+2. **HTTPS Only**: All traffic encrypted in transit
+3. **Latest TLS**: TLS 1.2 minimum enforced
+4. **Secure Storage**: Blob public access disabled, shared key access disabled
+5. **CORS Configuration**: Limited to GitHub domains
+6. **RBAC**: Principle of least privilege with specific role assignments
+
+### View Security Configuration
+
+```bash
+# Check security settings applied by Bicep
+az functionapp config show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --query "httpsOnly,minTlsVersion"
+
+# View CORS settings
+az functionapp cors show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP
+
+# Check managed identity configuration
+az functionapp identity show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP
+```
+
+### Additional Security (Optional)
+
+For production environments, consider additional security:
+
+1. **Authentication**: Enable if needed
    ```bash
    az functionapp auth update --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --enabled true --action LoginWithAzureActiveDirectory
    ```
 
-2. **Access Keys**: Secure function keys if needed:
+2. **Access Keys**: Our template uses anonymous auth level for GitHub Copilot compatibility
    ```bash
-   # List function keys
+   # View function keys if authentication is needed
    az functionapp keys list --name $FUNCTION_APP --resource-group $RESOURCE_GROUP
-   
-   # Create custom key
-   az functionapp keys set --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --key-name "copilot-key" --key-value "your-secure-key"
    ```
 
-3. **Network Security**: Configure network restrictions:
+3. **Network Security**: Add IP restrictions if needed
    ```bash
-   # Restrict access to specific IPs (example for GitHub)
-   az functionapp config access-restriction add --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --rule-name "GitHub" --action Allow --ip-address "140.82.112.0/20" --priority 100
+   # Example: Restrict to GitHub IP ranges
+   az functionapp config access-restriction add \
+     --name $FUNCTION_APP \
+     --resource-group $RESOURCE_GROUP \
+     --rule-name "GitHub" \
+     --action Allow \
+     --ip-address "140.82.112.0/20" \
+     --priority 100
    ```
+
+### Security Monitoring
+
+```bash
+# View security recommendations in Azure Security Center
+az security assessment list --scope "/subscriptions/$(az account show --query id --output tsv)/resourceGroups/$RESOURCE_GROUP"
+```
 
 ## Cost Management
 
@@ -547,37 +632,3 @@ EOF
 chmod +x quick-test.sh
 ```
 
-## Next Steps
-
-Great! You've successfully deployed your MCP server to Azure Functions. Your custom tools are now running in the cloud and ready for integration.
-
-### What We Accomplished
-
-- ✅ Created Azure resources (Resource Group, Storage Account, Function App)
-- ✅ Deployed TypeScript Azure Functions to the cloud
-- ✅ Configured Function App with optimal settings (FC1 SKU, Node.js 20)
-- ✅ Tested deployed functions with HTTP requests
-- ✅ Set up monitoring and logging
-- ✅ Learned troubleshooting techniques
-- ✅ Created useful scripts for future deployments
-
-### Key Takeaways
-
-1. **Serverless Architecture**: Azure Functions provide scalable, cost-effective hosting for MCP servers
-2. **FC1 SKU Benefits**: Better cold start performance and predictable pricing
-3. **MCP Protocol**: Works seamlessly in serverless environments with proper error handling
-4. **Testing Strategy**: Comprehensive testing ensures reliability in production
-5. **Monitoring**: Application Insights provides valuable insights for optimization
-6. **Cross-Platform**: Works great in both local Linux environments and GitHub Codespaces
-
-### Ready for Copilot Integration
-
-Your function URLs are now ready for GitHub Copilot integration:
-- **Function App URL**: `https://{your-function-app}.azurewebsites.net`
-- **MCP Endpoint**: `https://{your-function-app}.azurewebsites.net/api/mcp`
-
-Continue to [Part 4: Copilot Integration](part-4-copilot-integration.md) to connect your deployed MCP server with GitHub Copilot!
-
----
-
-> **Navigation**: [Workshop Home](../README.md) | [Linux Path](README.md) | [← Part 2](part-2-local-development.md) | [Part 4 →](part-4-copilot-integration.md)
