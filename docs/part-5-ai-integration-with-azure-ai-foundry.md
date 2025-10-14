@@ -141,7 +141,7 @@ Update your `local.settings.json`:
 
 ---
 
-## 💻 Update AI Code Review Tool
+## 💻 Review AI Code Review Tool
 
 The AI tool implementation will now connect to Azure AI:
 

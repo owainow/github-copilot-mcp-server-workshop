@@ -42,7 +42,7 @@ From Part 3 we have already set our Functions env vars, echo your Function URL's
 
 # Get the function URL
 echo "Base URL: $FUNCTION_URL"
-echo "MCP Endpoint: $FUNCTION_URL/api/mcp"
+echo "MCP Endpoint: $FUNCTION_URL/api/mcp-server"
 ```
 ### 3. Configure VS Code Settings
 
@@ -53,7 +53,7 @@ GitHub Copilot can be configured to use custom MCP servers through VS Code setti
 
 #### Method 1: VS Code Settings UI
 
-1. Click on the tools Icon in your CoPilot Chat
+1. Click on the tools Icon in your CoPilot Chat (Can also press Ctrl+shift+p and type MCP then select the option "Add MCP Server")
 2. Click the "Add MCP Server" Icon in the top right corner of the tools box
 3. Select to connect to a remote MCP server using HTTP
 4. Pass in the URL of your function and press enter.
@@ -76,7 +76,7 @@ GitHub Copilot can be configured to use custom MCP servers through VS Code setti
 In Copilot Chat, try:
 
 ```
-@workspace Can you review this markdown content for issues?
+Can you review this markdown content for issues?
 
 # Sample Document
 This is a sample document with some potential issues
@@ -91,7 +91,7 @@ This is a sample document with some potential issues
 Create a sample `package.json` and ask Copilot:
 
 ```
-@workspace Can you check the dependencies in my package.json file for security vulnerabilities and outdated packages?
+Can you check the dependencies in my package.json file for security vulnerabilities and outdated packages?
 ```
 
 #### Test 3: AI Code Review
@@ -99,7 +99,7 @@ Create a sample `package.json` and ask Copilot:
 Share some code and ask:
 
 ```
-@workspace Can you review this TypeScript code for potential issues, security concerns, and best practices?
+Can you review this TypeScript code for potential issues, security concerns, and best practices?
 
 ```typescript
 function processUserData(data: any) {
