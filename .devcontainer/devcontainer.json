@@ -58,15 +58,9 @@
       "onAutoForward": "silent"
     }
   },
-
-  "remoteUser": "vscode",
   
   "containerEnv": {
     "FUNCTIONS_WORKER_RUNTIME": "node",
     "NODE_ENV": "development"
-  },
-
-  "mounts": [
-    "source=${localWorkspaceFolder}/.azure,target=/home/vscode/.azure,type=bind,consistency=cached"
-  ]
+  }
 }
