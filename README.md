@@ -1,5 +1,6 @@
 # GitHub Copilot Custom MCP Server with Azure Functions Workshop
 
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/owainow/github-copilot-mcp-server-workshop)
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fyour-repo%2Fserverless-mcp-on-functions%2Fmain%2Finfra%2Fmain.json)
 
 ## 🚀 Overview
@@ -22,6 +23,18 @@ By the end of this workshop, you'll understand:
 - ✅ True MCP architecture: tools provide context, AI provides intelligence
 - ✅ GitHub Copilot integration patterns and best practices
 - ✅ Azure AI Foundry integration with graceful fallback patterns
+
+## ⚡ Quick Start Options
+
+### 🌟 **Recommended: GitHub Codespaces (Zero Setup)**
+Click the **"Open in GitHub Codespaces"** badge above for instant setup!
+- ✅ **No local installation required**
+- ✅ **Pre-configured environment with all tools**
+- ✅ **Works on any device with a browser**
+- ✅ **Ready in 2-3 minutes**
+
+### 💻 **Local Development Setup**
+For local development, you'll need:
 
 ## 🛠️ Prerequisites
 

@@ -1,0 +1,72 @@
+{
+  "name": "GitHub Copilot MCP Server Workshop",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:1-20-bullseye",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/azure-cli:1": {
+      "version": "latest"
+    }
+  },
+
+  "onCreateCommand": {
+    "install-azure-functions-tools": "npm install -g azure-functions-core-tools@4 --unsafe-perm true",
+    "install-dependencies": "npm install"
+  },
+
+  "postCreateCommand": "chmod +x .devcontainer/setup-workshop.sh && .devcontainer/setup-workshop.sh",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-azurefunctions",
+        "github.copilot",
+        "github.copilot-chat", 
+        "ms-vscode.azure-account",
+        "ms-vscode.vscode-typescript-next",
+        "ms-vscode.eslint",
+        "bradlc.vscode-tailwindcss",
+        "ms-vscode.vscode-json"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "eslint.validate": ["typescript", "javascript"],
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit"
+        },
+        "files.exclude": {
+          "**/dist": true,
+          "**/node_modules": true
+        },
+        "azureFunctions.projectRuntime": "~4",
+        "azureFunctions.projectLanguage": "TypeScript",
+        "git.autofetch": true,
+        "explorer.compactFolders": false
+      }
+    }
+  },
+
+  "forwardPorts": [7071, 7072],
+  "portsAttributes": {
+    "7071": {
+      "label": "Azure Functions Local Server",
+      "onAutoForward": "notify"
+    },
+    "7072": {
+      "label": "Azure Functions Alt Port", 
+      "onAutoForward": "silent"
+    }
+  },
+
+  "remoteUser": "vscode",
+  
+  "containerEnv": {
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "NODE_ENV": "development"
+  },
+
+  "mounts": [
+    "source=${localWorkspaceFolder}/.azure,target=/home/vscode/.azure,type=bind,consistency=cached"
+  ]
+}
