@@ -107,7 +107,8 @@ export class AiCodeReviewTool implements MCPTool {
             top_p: 0.9
         };
 
-        const response = await fetch(`${this.AZURE_AI_ENDPOINT}/openai/deployments/gpt-35-turbo/chat/completions?api-version=2024-02-15-preview`, {
+        // Use the endpoint directly - it already contains the full path including API version
+        const response = await fetch(this.AZURE_AI_ENDPOINT, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

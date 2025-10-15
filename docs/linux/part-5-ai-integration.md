@@ -40,66 +40,47 @@ After this workshop, it will provide real AI-powered analysis:
 
 ---
 
-## 🆓 Azure AI Foundry Free Tier Setup
-
-Azure AI Foundry provides a free tier that includes:
-- **Free trial credits** for new Azure accounts
-- **Basic quotas** for GPT-3.5-turbo model
-- **Limited requests per month** (sufficient for workshop testing)
-
----
-
 ## 🚀 Quick Setup Guide
 
 ### 1. Create Azure AI Hub (Portal Method)
 
 1. **Open Azure Portal**: Navigate to [portal.azure.com](https://portal.azure.com)
 
-2. **Create Azure AI Hub**:
+2. **Create Azure AI Foundry Resource**:
    - Search for "Azure AI Foundry" in the search bar
-   - Click "Create" → "New AI Hub"
+   - Click "Create a resource"
    - Fill in the details:
      - **Subscription**: Your Azure subscription
      - **Resource Group**: `mcp-workshop-rg` (same as your Function App)
-     - **Hub Name**: `mcp-workshop-ai-hub`
+     - **Foundry Name**: `mcp-workshop-ai-hub`
      - **Location**: `East US` (or your preferred region)
+     - **Project Name**: `mcp-code-review-project`
+   - Click "Next"
 
-3. **Configure Settings**:
-   - **Storage Account**: Create new or use existing
-   - **Key Vault**: Create new or use existing
-   - **Application Insights**: Use the same one from your Function App
-   - Click "Review + Create" → "Create"
-
-### 2. Create AI Project
-
-1. **Navigate to AI Foundry Portal**: 
-   - Go to [ai.azure.com](https://ai.azure.com)
-   - Sign in with your Azure account
-
-2. **Create New Project**:
-   - Click "New Project"
-   - **Project Name**: `mcp-code-review-project`
-   - **Hub**: Select `mcp-workshop-ai-hub`
-   - Click "Create"
+3. **Additional Settings**:
+   - Inbound Access -> All Networks -> Next
+   - Identity -> System Assigned -> Next
+   - Data Encryption (Leave blank) -> Next
+   - Tags -> Next
+  
+  - Finally click "Create"!
 
 ### 3. Deploy Model
-
+Once your resource has provisioned click on it in the Azure portal and then in the overview blade click "Go to Azure AI Foundry Portal" and log in.
 1. **In AI Foundry Portal**:
-   - Navigate to your project
-   - Go to "Models" → "Model Catalog"
+   - Go to "Model Catalog"
    - Search for "GPT-3.5-turbo" 
-   - Click on the model → "Deploy"
+   - Click on the model → "Use this model"
 
 2. **Configure Deployment**:
    - **Deployment Name**: `gpt-35-turbo-mcp`
-   - **Model Version**: Latest
-   - **Pricing Tier**: Standard (uses free credits)
+   - **Deployment Type**: Standard
    - Click "Deploy"
 
 3. **Get Endpoint Details**:
    - Once deployed, go to "Deployments"
    - Click on `gpt-35-turbo-mcp`
-   - Copy the **Endpoint URL** and **API Key**
+   - Copy the **Target URI** and **Key**
 
 ---
 
@@ -110,11 +91,11 @@ Azure AI Foundry provides a free tier that includes:
 ```bash
 # Set the Azure AI configuration
 az functionapp config appsettings set \
-  --name mcp-server-functions-<your-name> \
-  --resource-group mcp-workshop-rg \
+  --name <your function name>\
+  --resource-group rg-mcp-workshop \
   --settings \
-    AZURE_OPENAI_ENDPOINT="https://your-endpoint.openai.azure.com/" \
-    AZURE_OPENAI_API_KEY="your-api-key" \
+    AZURE_OPENAI_ENDPOINT="<https://your-endpoint.openai.azure.com/>" \
+    AZURE_OPENAI_API_KEY="<your-api-key>" \
     AZURE_OPENAI_DEPLOYMENT_NAME="gpt-35-turbo-mcp" \
     AZURE_OPENAI_API_VERSION="2024-02-15-preview" \
     ENABLE_AI_TOOL="true"
@@ -122,20 +103,24 @@ az functionapp config appsettings set \
 
 ### 2. Update Local Settings (for testing)
 
-Update your `local.settings.json`:
+Update your `local.settings.json` and add values to the API key and API Endpoint settings:
 
 ```json
 {
   "IsEncrypted": false,
   "Values": {
-    "AzureWebJobsStorage": "",
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
     "FUNCTIONS_WORKER_RUNTIME": "node",
-    "AZURE_OPENAI_ENDPOINT": "https://your-endpoint.openai.azure.com/",
-    "AZURE_OPENAI_API_KEY": "your-api-key",
-    "AZURE_OPENAI_DEPLOYMENT_NAME": "gpt-35-turbo-mcp",
-    "AZURE_OPENAI_API_VERSION": "2024-02-15-preview",
-    "ENABLE_AI_TOOL": "true"
-  }
+    "MCP_SERVER_NAME": "GitHub Copilot MCP Server",
+    "MCP_SERVER_VERSION": "1.0.0",
+    "ENABLE_MARKDOWN_TOOL": "true",
+    "ENABLE_DEPENDENCY_TOOL": "true",
+    "ENABLE_AI_TOOL": "true",
+    "AZURE_AI_ENDPOINT": "<YOUR URI>",
+    "AZURE_AI_KEY": "<YOUR KEY>",
+    "MCP_LOG_LEVEL": "info"
+  },
+  "ConnectionStrings": {}
 }
 ```
 
@@ -339,9 +324,7 @@ this.telemetry.trackEvent('AIToolCalled', {
 
 ## 💰 Cost Management
 
-### Free Tier Limits
-
-- **GPT-3.5-turbo**: 120,000 tokens per month free
+- **GPT-3.5-turbo**: 1M of input and output, roughly $10
 - **Typical code review**: ~500-1000 tokens per analysis
 - **Estimated capacity**: 120-240 code reviews per month
 
@@ -377,7 +360,7 @@ Congratulations! You've built a complete **production-ready MCP server** with:
 - ✅ **GitHub Copilot integration** with VS Code
 - ✅ **Real AI capabilities** powered by Azure AI Foundry
 - ✅ **Production monitoring** and error handling
-- ✅ **Cost-effective architecture** with free tier usage
+- ✅ **Cost-effective architecture** 
 
 ### 🚀 What You've Achieved
 

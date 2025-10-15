@@ -55,45 +55,35 @@ Azure AI Foundry provides a free tier that includes:
 
 1. **Open Azure Portal**: Navigate to [portal.azure.com](https://portal.azure.com)
 
-2. **Create Azure AI Hub**:
+2. **Create Azure AI Foundry Resource**:
    - Search for "Azure AI Foundry" in the search bar
-   - Click "Create" → "New AI Hub"
+   - Click "Create a resource"
    - Fill in the details:
      - **Subscription**: Your Azure subscription
      - **Resource Group**: `mcp-workshop-rg` (same as your Function App)
-     - **Hub Name**: `mcp-workshop-ai-hub`
+     - **Foundry Name**: `mcp-workshop-ai-hub`
      - **Location**: `East US` (or your preferred region)
+     - **Project Name**: `mcp-code-review-project`
+   - Click "Next"
 
-3. **Configure Settings**:
-   - **Storage Account**: Create new or use existing
-   - **Key Vault**: Create new or use existing
-   - **Application Insights**: Use the same one from your Function App
-   - Click "Review + Create" → "Create"
-
-### 2. Create AI Project
-
-1. **Navigate to AI Foundry Portal**: 
-   - Go to [ai.azure.com](https://ai.azure.com)
-   - Sign in with your Azure account
-
-2. **Create New Project**:
-   - Click "New Project"
-   - **Project Name**: `mcp-code-review-project`
-   - **Hub**: Select `mcp-workshop-ai-hub`
-   - Click "Create"
+3. **Additional Settings**:
+   - Inbound Access -> All Networks -> Next
+   - Identity -> System Assigned -> Next
+   - Data Encryption (Leave blank) -> Next
+   - Tags -> Next
+  
+  - Finally click "Create"!
 
 ### 3. Deploy Model
-
+Once your resource has provisioned click on it in the Azure portal and then in the overview blade click "Go to Azure AI Foundry Portal" and log in.
 1. **In AI Foundry Portal**:
-   - Navigate to your project
-   - Go to "Models" → "Model Catalog"
+   - Go to "Model Catalog"
    - Search for "GPT-3.5-turbo" 
-   - Click on the model → "Deploy"
+   - Click on the model → "Use this model"
 
 2. **Configure Deployment**:
    - **Deployment Name**: `gpt-35-turbo-mcp`
-   - **Model Version**: Latest
-   - **Pricing Tier**: Standard (uses free credits)
+   - **Deployment Type**: Standard
    - Click "Deploy"
 
 3. **Get Endpoint Details**:

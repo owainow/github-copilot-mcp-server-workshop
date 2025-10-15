@@ -180,7 +180,7 @@ graph TB
 ### Azure Account
 - Free Azure account with:
   - Azure Functions (Consumption plan)
-  - Azure AI Foundry (F0 free tier)
+  - Azure AI Foundry ($0.10 Cost)
   - Resource group permissions
 
 ### GitHub Account

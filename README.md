@@ -101,7 +101,7 @@ Choose your platform for local development:
 3. Advanced Integration Patterns
 
 ### [Part 5: AI Integration](docs/{platform}/part-5-ai-integration.md) (45 minutes) 🤖
-1. Setting Up Azure AI Foundry Free Tier
+1. Setting Up Azure AI Foundry
 2. Implementing Real AI Analysis
 3. Comparing Educational vs Production Tools
 4. Understanding True MCP Architecture
@@ -304,7 +304,7 @@ az account set --subscription "your-subscription-id"
 ## 🌟 What Makes This Workshop Special
 
 1. **Progressive Complexity**: From simple local tools to production AI integration
-2. **Cost Conscious**: Free tier options with graceful fallbacks
+2. **Cost Conscious**: Carefully curated services for lowest possible cost.
 3. **Real-World Ready**: Production patterns with security considerations  
 4. **Complete Coverage**: Local development → Azure deployment → Copilot integration → AI enhancement
 5. **Hands-On Testing**: Comprehensive test scripts for every stage
