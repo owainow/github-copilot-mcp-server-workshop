@@ -102,7 +102,7 @@ First, make sure you have the environment variables from Part 4:
 # Check that your environment variables are set
 echo "Function App: $FUNCTION_APP"
 echo "Function URL: $FUNCTION_URL"
-echo "Resource Group: $RESOURCE_GROUP"
+RESOURCE_GROUP="rg-mcp-workshop"
 
 # If not set, reload them from Part 3 deployment outputs
 if [ -z "$FUNCTION_APP" ]; then
