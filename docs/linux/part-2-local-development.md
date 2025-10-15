@@ -386,9 +386,54 @@ func start --port 7071
 #   mcp-server: [POST,GET] http://localhost:7071/api/mcp-server
 ```
 
-### 3. Test MCP Protocol Endpoints (Bash/curl)
+## 🧪 Quick Testing with Automated Script
+
+We've included a comprehensive test script to verify all functionality:
+
+```bash
+# Make the test script executable
+chmod +x test-local-functions.sh
+
+# Run all local tests
+./test-local-functions.sh
+```
+
+This script will test:
+- ✅ **Tool Discovery**: Verify all tools are registered
+- ✅ **Markdown Review**: Test content analysis functionality  
+- ✅ **Dependency Check**: Test package.json analysis
+- ✅ **AI Code Review**: Test mock AI analysis mode
+- ✅ **Error Handling**: Verify graceful error responses
+
+Expected output:
+```
+🧪 Testing MCP Server Local Development
+======================================
+
+✅ MCP server is running
+
+Testing: Tool Discovery
+✅ PASSED: Tool Discovery
+
+Testing: Markdown Review Tool
+✅ PASSED: Markdown Review Tool
+
+Testing: Dependency Check Tool
+✅ PASSED: Dependency Check Tool
+
+Testing: AI Code Review Tool (Mock)
+✅ PASSED: AI Code Review Tool (Mock)
+
+🎉 All local development tests completed!
+```
+
+### 3. Manual Testing (Alternative)
+
+If you prefer to test manually, you can run individual curl commands:
 
 #### Test Tool Discovery
+
+In a new terminal window (to not stop the local running function):
 
 ```bash
 curl -X POST http://localhost:7071/api/mcp-server \
@@ -502,7 +547,7 @@ sequenceDiagram
 - [ ] Local Azure Functions server starts (`func start`)
 - [ ] MCP endpoints respond to HTTP requests
 - [ ] All three tools return expected results
-- [ ] Test scripts pass (`./test-workshop.sh --level local`)
+- [ ] **Automated tests pass** (`./test-local-functions.sh`)
 
 ---
 

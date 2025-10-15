@@ -181,9 +181,6 @@ echo "Function App URLs:"
 echo "Base URL: $FUNCTION_URL"
 echo "MCP Endpoint: $FUNCTION_URL/api/mcp"
 
-# Or get it directly from Azure if needed
-HOSTNAME=$(az functionapp show --name $FUNCTION_APP --resource-group $RESOURCE_GROUP --query "defaultHostName" --output tsv)
-echo "Direct hostname: https://$HOSTNAME"
 ```
 
 ### 2. Test Deployed Functions

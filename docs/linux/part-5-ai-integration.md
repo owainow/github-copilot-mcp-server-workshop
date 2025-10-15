@@ -134,9 +134,9 @@ az functionapp config appsettings set \
   --name $FUNCTION_APP \
   --resource-group rg-mcp-workshop \
   --settings \
-    AZURE_OPENAI_ENDPOINT="<https://your-endpoint.openai.azure.com/>" \
-    AZURE_OPENAI_API_KEY="<your-api-key>" \
-    AZURE_OPENAI_DEPLOYMENT_NAME="gpt-35-turbo-mcp" \
+    AZURE_AI_ENDPOINT="<https://your-endpoint.openai.azure.com/>" \
+    AZURE_AI_KEY="<your-api-key>" \
+    AZURE_AI_DEPLOYMENT_NAME="gpt-35-turbo-mcp" \
     AZURE_OPENAI_API_VERSION="2025-01-01-preview" \
     ENABLE_AI_TOOL="true"
 
@@ -172,107 +172,27 @@ Update your `local.settings.json` and add values to the API key and API Endpoint
 
 ---
 
-## 💻 Review AI Code Review Tool
+## 💻 Understanding the AI Code Review Tool
 
-The AI tool implementation will now connect to Azure AI:
+The AI integration is already implemented in your project! Take a moment to review the actual implementation:
 
-```typescript
-import { OpenAIClient, AzureKeyCredential } from '@azure/openai';
+📁 **Open and examine**: `src/tools/ai-code-review.ts`
 
-export class AiCodeReviewTool implements MCPTool {
-  name = 'ai_code_review';
-  description = 'AI-powered code analysis using Azure OpenAI';
-  
-  private client: OpenAIClient;
+### Key Features to Notice:
 
-  constructor() {
-    if (this.isAzureAIConfigured()) {
-      this.client = new OpenAIClient(
-        process.env.AZURE_OPENAI_ENDPOINT!,
-        new AzureKeyCredential(process.env.AZURE_OPENAI_API_KEY!)
-      );
-    }
-  }
+1. **Smart Configuration Detection**: The tool automatically detects if Azure AI is configured via environment variables
+2. **Graceful Fallback**: Falls back to mock analysis if Azure AI is unavailable or fails
+3. **Azure OpenAI Integration**: Uses the `@azure/openai` client for real AI analysis when configured
+4. **Structured Prompts**: Sends well-structured prompts to get consistent, useful code reviews
+5. **Error Handling**: Robust error handling ensures the tool always returns a useful response
 
-  async call(args: any): Promise<ToolResult> {
-    const { code, language = 'javascript', review_type = 'comprehensive' } = args;
-    
-    if (!this.isAzureAIConfigured()) {
-      return this.getMockAnalysis(code, language);
-    }
+### How It Works:
 
-    try {
-      const analysis = await this.getAIAnalysis(code, language, review_type);
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify({
-            status: "ai_analysis",
-            analysis
-          }, null, 2)
-        }]
-      };
-    } catch (error) {
-      // Graceful fallback to mock analysis
-      console.error('Azure AI analysis failed:', error);
-      return this.getMockAnalysis(code, language);
-    }
-  }
+- **Without Azure AI**: Returns `"status": "mock_analysis"` with educational examples
+- **With Azure AI**: Returns `"status": "ai_analysis"` with real AI-powered insights
+- **On Error**: Gracefully falls back to mock mode with error logging
 
-  private async getAIAnalysis(code: string, language: string, reviewType: string) {
-    const systemPrompt = `You are an expert code reviewer. Analyze the provided ${language} code and provide:
-1. Overall assessment of code quality
-2. Specific issues found (with line numbers if possible)
-3. Security concerns
-4. Performance recommendations
-5. Best practice suggestions
-
-Provide your response as a structured JSON object.`;
-
-    const userPrompt = `Please review this ${language} code:
-
-\`\`\`${language}
-${code}
-\`\`\`
-
-Review type: ${reviewType}`;
-
-    const response = await this.client.getChatCompletions(
-      process.env.AZURE_OPENAI_DEPLOYMENT_NAME!,
-      [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userPrompt }
-      ],
-      {
-        maxTokens: 1000,
-        temperature: 0.1
-      }
-    );
-
-    const aiResponse = response.choices[0].message?.content;
-    
-    try {
-      return JSON.parse(aiResponse || '{}');
-    } catch {
-      // If AI doesn't return valid JSON, structure the response
-      return {
-        overall_assessment: aiResponse,
-        issues: ["AI analysis completed - see overall assessment for details"],
-        recommendations: ["Review the detailed analysis above"],
-        security_notes: ["No structured security analysis available"]
-      };
-    }
-  }
-
-  private isAzureAIConfigured(): boolean {
-    return !!(
-      process.env.AZURE_OPENAI_ENDPOINT &&
-      process.env.AZURE_OPENAI_API_KEY &&
-      process.env.AZURE_OPENAI_DEPLOYMENT_NAME
-    );
-  }
-}
-```
+The beauty of this design is that **no code changes are needed** - just adding the environment variables will automatically enable real AI analysis!
 
 ---
 
@@ -329,10 +249,35 @@ The response should now show `"status": "ai_analysis"` instead of `"status": "mo
 
 ### 3. Test in GitHub Copilot
 
-Open VS Code and ask Copilot:
-```
-"Can you review this JavaScript function using AI analysis?"
-```
+Now let's test the AI code review with a real example. We've included a sample JavaScript file with intentional issues:
+
+📁 **Open the sample file**: `sample-code-for-review.js`
+
+This file contains various code quality issues including:
+- Missing input validation
+- Weak error handling
+- Type safety issues
+- Performance problems
+- Security concerns
+
+**Test the AI code review in VS Code:**
+
+1. **Open** `sample-code-for-review.js` in VS Code
+2. **Ask GitHub Copilot**:
+   ```
+   "Can you review this JavaScript code using AI analysis.
+   ```
+
+You should see Copilot provide detailed, AI-generated analysis pointing out:
+- Input validation issues
+- Type safety problems
+- Security vulnerabilities
+- Performance improvements
+- Modern JavaScript best practices
+
+**Compare the responses:**
+- **Before Part 5**: Mock analysis with generic suggestions
+- **After Part 5**: Detailed, specific AI analysis of the actual code issues
 
 Copilot will now use the real Azure AI-powered code review tool!
 

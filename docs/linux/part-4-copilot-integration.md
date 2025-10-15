@@ -71,6 +71,8 @@ GitHub Copilot can be configured to use custom MCP servers through VS Code setti
 
 ### 2. Test MCP Tools in Copilot
 
+If using VSCode desktop you should be able to see the MCP server icon bottom right in your chat window. MCP tools will be running and ready to use by default. If you are in the codespace then you can manually add the tools to you call using the attachment icon and add all the server tools in Tools -> <Your MCP Server>
+
 #### Test 1: Markdown Review
 
 In Copilot Chat, try:

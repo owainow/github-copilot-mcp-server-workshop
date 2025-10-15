@@ -205,6 +205,8 @@ az --version
 # You're ready to go - skip to "Project Setup" below!
 ```
 
+My preference is to open codespaces in VScode on my desktop. You can do that directly from File -> Open in VsCode Desktop.
+
 ### 🐧 **If Using Local Linux/macOS**
 
 ```bash
