@@ -139,7 +139,13 @@ az functionapp config appsettings set \
     AZURE_OPENAI_DEPLOYMENT_NAME="gpt-35-turbo-mcp" \
     AZURE_OPENAI_API_VERSION="2025-01-01-preview" \
     ENABLE_AI_TOOL="true"
+
+# Wait for function app to restart and pick up new settings
+echo "Waiting for function app to restart with new settings..."
+sleep 30
 ```
+
+> **💡 Important**: Azure Function Apps automatically restart when application settings are updated. This ensures your function picks up the new Azure AI configuration. The restart typically takes 15-30 seconds.
 
 ### 2. Update Local Settings (for testing)
 
@@ -297,13 +303,12 @@ curl -X POST http://localhost:7071/api/mcp-server \
   }'
 ```
 
-### 2. Deploy Updated Function
+### 2. Test the AI Integration
+
+Now that the environment variables are configured, your existing deployed function will automatically use the Azure AI service:
 
 ```bash
-# Deploy the updated code to Azure using environment variables
-func azure functionapp publish $FUNCTION_APP
-
-# Test on Azure using your function URL
+# Test on Azure using your function URL (no redeployment needed!)
 curl -X POST $FUNCTION_URL/api/mcp-server \
   -H "Content-Type: application/json" \
   -d '{
@@ -319,6 +324,8 @@ curl -X POST $FUNCTION_URL/api/mcp-server \
     }
   }'
 ```
+
+The response should now show `"status": "ai_analysis"` instead of `"status": "mock_analysis"`!
 
 ### 3. Test in GitHub Copilot
 
