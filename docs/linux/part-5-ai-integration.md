@@ -396,3 +396,7 @@ az functionapp config appsettings list \
 ---
 
 **🎯 You've successfully created a sophisticated AI-enhanced development assistant that scales from personal use to enterprise deployment!**
+
+---
+
+> **Next Step**: Continue to [Part 6: Cleanup & Next Steps →](part-6-cleanup-and-next-steps.md) to clean up Azure resources and explore extension opportunities.

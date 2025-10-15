@@ -24,7 +24,7 @@ By the end of this workshop, you'll understand:
 - ✅ GitHub Copilot integration patterns and best practices
 - ✅ Azure AI Foundry integration with graceful fallback patterns
 
-## ⚡ Quick Start Options
+## ⚡ How to start! Quick Start Options:
 
 ### 🌟 **Option 1: GitHub Codespaces (Recommended - Zero Setup)**
 Click the **"Open in GitHub Codespaces"** badge above for instant setup!
@@ -36,11 +36,6 @@ Click the **"Open in GitHub Codespaces"** badge above for instant setup!
 
 ### 💻 **Option 2: Local Development**
 Choose your platform for local development:
-
-#### 🪟 **Windows (PowerShell)**
-- 📖 **[Windows Workshop Documentation](docs/windows/)** - Complete Windows setup with PowerShell commands
-- 🛠️ **Requirements**: Node.js, Azure CLI, Azure Functions Core Tools, VS Code
-- 💡 **Best for**: Windows developers, PowerShell users, local development preference
 
 #### 🐧 **Linux/macOS (Bash)**  
 - 📖 **[Linux Workshop Documentation](docs/linux/)** - Complete Linux setup with Bash commands
@@ -54,7 +49,6 @@ Choose your platform for local development:
 | Platform | Quick Start | Documentation | Best For |
 |----------|-------------|---------------|----------|
 | **🌟 Codespaces** | [![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/owainow/github-copilot-mcp-server-workshop) | [📖 Linux/Bash Docs](docs/linux/) | Zero setup, any device |
-| **🪟 Windows** | [Setup Guide](docs/windows/setup.md) | [📖 Windows/PowerShell Docs](docs/windows/) | Windows developers |
 | **🐧 Linux/macOS** | [Setup Guide](docs/linux/setup.md) | [📖 Linux/Bash Docs](docs/linux/) | Linux/macOS developers |
 
 ## 🛠️ Prerequisites
@@ -106,69 +100,6 @@ Choose your platform for local development:
 3. Comparing Educational vs Production Tools
 4. Understanding True MCP Architecture
 
-## 🚀 Quick Start Examples
-
-### GitHub Codespaces (Linux/Bash)
-```bash
-# Automatically configured - just open and run:
-npm install && npm run build
-func start --port 7071
-./test-workshop.sh
-```
-
-### Windows (PowerShell)
-```powershell
-# Clone and setup
-git clone <your-repo-url>
-cd serverless_mcp_on_functions_for_github_copilot
-npm install ; npm run build
-func start --port 7071
-.\test-workshop.ps1 -TestLevel local
-```
-
-### Linux/macOS (Bash)
-```bash
-# Clone and setup
-git clone <your-repo-url>
-cd serverless_mcp_on_functions_for_github_copilot
-npm install && npm run build
-func start --port 7071
-./test-workshop.sh --level local
-```
-
-### 3. Deploy to Azure
-
-#### Windows (PowerShell)
-```powershell
-az login
-az group create --name mcp-workshop-rg --location eastus
-az deployment group create --resource-group mcp-workshop-rg --template-file infra/main.bicep
-func azure functionapp publish mcp-workshop-func --typescript
-```
-
-#### Linux/Bash (including Codespaces)
-```bash
-az login
-az group create --name mcp-workshop-rg --location eastus
-az deployment group create --resource-group mcp-workshop-rg --template-file infra/main.bicep
-func azure functionapp publish mcp-workshop-func --typescript
-```
-
-### 4. Add AI Integration (Optional)
-Follow **Part 5** of the workshop documentation in `docs/part-5-ai-integration.md` to set up Azure AI Foundry integration through the portal.
-
-### 5. Connect to GitHub Copilot
-Add to VS Code settings.json:
-```json
-{
-  "github.copilot.chat.mcp.servers": {
-    "mcp-workshop": {
-      "endpoint": "https://your-function-app.azurewebsites.net/api/mcp-server"
-    }
-  }
-}
-```
-
 ## 🏗️ Architecture Overview
 
 ```mermaid
@@ -199,68 +130,7 @@ This workshop demonstrates **three distinct tool patterns**:
 - **Features**: Real LLM analysis, graceful fallback to mock analysis
 
 #### 🔄 Hybrid Approach
-All tools work **without Azure costs** through intelligent fallback patterns, making the workshop accessible to everyone while demonstrating production capabilities.
-
-# Set your subscription (if you have multiple)
-az account set --subscription "your-subscription-id"
-```
-
-## 📁 Project Structure
-
-```
-├── docs/                           # Workshop documentation
-│   ├── windows/                    # Windows/PowerShell path
-│   │   ├── part-1-setup-and-understanding.md
-│   │   ├── part-2-local-development.md
-│   │   ├── part-3-azure-deployment.md
-│   │   ├── part-4-copilot-integration.md
-│   │   └── part-5-ai-integration.md
-│   └── linux/                      # Linux/Bash path (& Codespaces)
-│       ├── part-1-setup-and-understanding.md
-│       ├── part-2-local-development.md
-│       ├── part-3-azure-deployment.md
-│       ├── part-4-copilot-integration.md
-│       └── part-5-ai-integration.md
-├── src/                            # MCP server source code
-│   ├── functions/mcp-server.ts     # Azure Functions HTTP trigger
-│   ├── mcp/server.ts              # MCP protocol implementation
-│   ├── tools/                     # Custom MCP tools
-│   │   ├── markdown-review.ts     # Educational: Local analysis
-│   │   ├── dependency-check.ts    # Educational: Package analysis  
-│   │   └── ai-code-review.ts      # Production: Azure AI integration
-│   └── utils/                     # Shared utilities
-├── infra/                         # Azure infrastructure (Bicep)
-├── tests/                         # Test suites
-├── test-workshop.ps1              # Comprehensive workshop test script
-├── test-ai-integration.ps1        # AI integration tests
-└── test-all-tools.ps1             # Individual tool testing
-```
-
-## 🧪 Testing Your Setup
-
-### Windows (PowerShell)
-```powershell
-# Test local development
-.\test-workshop.ps1 -TestLevel local
-
-# Test Azure deployment  
-.\test-workshop.ps1 -TestLevel azure -FunctionUrl "https://your-app.azurewebsites.net/api/mcp-server"
-
-# Test AI integration
-.\test-ai-integration.ps1
-```
-
-### Linux/Bash (including Codespaces)
-```bash
-# Test local development
-./test-workshop.sh --level local
-
-# Test Azure deployment  
-./test-workshop.sh --level azure --url "https://your-app.azurewebsites.net/api/mcp-server"
-
-# Test AI integration
-./test-ai-integration.sh
-```
+All tools work **without Azure costs (minor GPT3.5 cost($.10) if desired)** through intelligent fallback patterns, making the workshop accessible to everyone while demonstrating production capabilities.
 
 ## 🎯 Key Learning Outcomes
 
@@ -289,17 +159,10 @@ az account set --subscription "your-subscription-id"
 ### 🌟 **Codespaces Users (Recommended)**
 **Start Here**: [Part 1: Setup and Understanding](docs/linux/part-1-setup-and-understanding.md)
 
-### 🪟 **Windows Users**  
-**Start Here**: [Part 1: Setup and Understanding](docs/windows/part-1-setup-and-understanding.md)
-
 ### 🐧 **Linux/macOS Users**
 **Start Here**: [Part 1: Setup and Understanding](docs/linux/part-1-setup-and-understanding.md)
 
 ---
-
-**Need AI Integration Fast?** See platform-specific quick setup:
-- 🪟 [Windows AI Quickstart](docs/windows/quickstart-ai.md)
-- 🐧 [Linux AI Quickstart](docs/linux/quickstart-ai.md)
 
 ## 🌟 What Makes This Workshop Special
 
@@ -320,5 +183,3 @@ az account set --subscription "your-subscription-id"
 MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
-
-🚀 **Ready to extend GitHub Copilot with custom tools?** Start with [Part 1: Setup and Understanding](docs/part-1-understanding-mcp-and-setup.md)!
