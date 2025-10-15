@@ -2,7 +2,14 @@
 
 > **Workshop Navigation**: [Part 2: Local Development →](part-2-local-development.md) | **Platform**: 🐧 Linux/Bash & 🌟 Codespaces
 
-## 🎯 Workshop Overview
+## � Quick Start: Deploy Your Codespace
+
+**Haven't set up your workshop environment yet?** 
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/owainow/github-copilot-mcp-server-workshop)
+
+
+## �🎯 Workshop Overview
 
 This workshop takes you through building a complete **GitHub Copilot Custom MCP Server** using Azure Functions, progressing through five key stages:
 
