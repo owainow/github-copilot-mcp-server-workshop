@@ -2,6 +2,14 @@
 
 > **Workshop Navigation**: [← Part 4: Copilot Integration](part-4-copilot-integration.md)
 
+## Prerequisites
+
+- Completed [Part 4: Copilot Integration](part-4-copilot-integration.md)
+- Environment variables from previous parts:
+  - `$FUNCTION_APP` - Your Azure Function App name
+  - `$FUNCTION_URL` - Your Azure Function URL  
+  - `$RESOURCE_GROUP` - Your resource group name (rg-mcp-workshop)
+
 ## 🎯 Workshop Objective
 
 Transform your MCP server from educational demos to production-ready AI integration by connecting the `ai_code_review` tool to **Azure AI Foundry** with a deployed model endpoint.
@@ -51,7 +59,7 @@ After this workshop, it will provide real AI-powered analysis:
    - Click "Create a resource"
    - Fill in the details:
      - **Subscription**: Your Azure subscription
-     - **Resource Group**: `mcp-workshop-rg` (same as your Function App)
+     - **Resource Group**: `$RESOURCE_GROUP` (same as your Function App from Parts 3-4)
      - **Foundry Name**: `mcp-workshop-ai-hub`
      - **Location**: `East US` (or your preferred region)
      - **Project Name**: `mcp-code-review-project`
@@ -86,18 +94,50 @@ Once your resource has provisioned click on it in the Azure portal and then in t
 
 ## 🔧 Configure Your MCP Server
 
-### 1. Update Azure Function App Settings
+### 1. Verify Environment Variables from Part 4
+
+First, make sure you have the environment variables from Part 4:
 
 ```bash
-# Set the Azure AI configuration
+# Check that your environment variables are set
+echo "Function App: $FUNCTION_APP"
+echo "Function URL: $FUNCTION_URL"
+echo "Resource Group: $RESOURCE_GROUP"
+
+# If not set, reload them from Part 3 deployment outputs
+if [ -z "$FUNCTION_APP" ]; then
+    FUNCTION_APP=$(az deployment group show \
+      --resource-group rg-mcp-workshop \
+      --name main \
+      --query "properties.outputs.functionAppName.value" \
+      --output tsv)
+    
+    FUNCTION_URL=$(az deployment group show \
+      --resource-group rg-mcp-workshop \
+      --name main \
+      --query "properties.outputs.functionAppUrl.value" \
+      --output tsv)
+    
+    RESOURCE_GROUP="rg-mcp-workshop"
+    
+    # Store for this session
+    export FUNCTION_APP FUNCTION_URL RESOURCE_GROUP
+    echo "Environment variables reloaded from deployment"
+fi
+```
+
+### 2. Update Azure Function App Settings
+
+```bash
+# Set the Azure AI configuration using environment variables
 az functionapp config appsettings set \
-  --name <your function name>\
+  --name $FUNCTION_APP \
   --resource-group rg-mcp-workshop \
   --settings \
     AZURE_OPENAI_ENDPOINT="<https://your-endpoint.openai.azure.com/>" \
     AZURE_OPENAI_API_KEY="<your-api-key>" \
     AZURE_OPENAI_DEPLOYMENT_NAME="gpt-35-turbo-mcp" \
-    AZURE_OPENAI_API_VERSION="2024-02-15-preview" \
+    AZURE_OPENAI_API_VERSION="2025-01-01-preview" \
     ENABLE_AI_TOOL="true"
 ```
 
@@ -260,11 +300,11 @@ curl -X POST http://localhost:7071/api/mcp-server \
 ### 2. Deploy Updated Function
 
 ```bash
-# Deploy the updated code to Azure
-func azure functionapp publish mcp-server-functions-<your-name>
+# Deploy the updated code to Azure using environment variables
+func azure functionapp publish $FUNCTION_APP
 
-# Test on Azure
-curl -X POST https://mcp-server-functions-<your-name>.azurewebsites.net/api/mcp-server \
+# Test on Azure using your function URL
+curl -X POST $FUNCTION_URL/api/mcp-server \
   -H "Content-Type: application/json" \
   -d '{
     "jsonrpc": "2.0",
@@ -303,22 +343,6 @@ Copilot will now use the real Azure AI-powered code review tool!
    - Error rates
    - Cost analysis
 
-### Azure Application Insights
-
-Your Function App will show AI tool usage:
-
-```typescript
-// Enhanced telemetry in the AI tool
-this.telemetry.trackEvent('AIToolCalled', {
-  toolName: 'ai_code_review',
-  language: args.language,
-  codeLength: args.code.length,
-  aiProvider: 'azure_openai',
-  deploymentName: process.env.AZURE_OPENAI_DEPLOYMENT_NAME,
-  success: true,
-  tokensUsed: response.usage?.totalTokens
-});
-```
 
 ---
 
