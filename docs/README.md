@@ -6,6 +6,13 @@ This comprehensive workshop teaches you to build, deploy, and integrate a custom
 
 ---
 
+## � Quick Start: Deploy Your Codespace
+
+**Haven't set up your workshop environment yet?** 
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/owainow/github-copilot-mcp-server-workshop)
+
+
 ## 📚 Workshop Structure
 
 ### **Part 1: [Understanding MCP & Workshop Setup](part-1-understanding-mcp-and-setup.md)**
