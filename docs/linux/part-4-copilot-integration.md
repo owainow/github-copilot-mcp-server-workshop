@@ -57,7 +57,7 @@ GitHub Copilot can be configured to use custom MCP servers through VS Code setti
 2. Click the "Add MCP Server" Icon in the top right corner of the tools box
 3. Select to connect to a remote MCP server using HTTP
 4. Pass in the URL of your function and press enter.
-5. Name the MCP server and select "Global".
+5. Name the MCP server and select "Remote".
 6. Review the created mcp.json and the status shown of the server. You should see it say "Running"
 7. Ask your copilot chat what MCP servers it has available, it should respond with your custom MCP server and the tools. 
 
