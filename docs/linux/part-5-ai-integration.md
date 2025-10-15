@@ -118,7 +118,7 @@ if [ -z "$FUNCTION_APP" ]; then
       --query "properties.outputs.functionAppUrl.value" \
       --output tsv)
     
-    RESOURCE_GROUP="rg-mcp-workshop"
+
     
     # Store for this session
     export FUNCTION_APP FUNCTION_URL RESOURCE_GROUP
