@@ -73,28 +73,28 @@ Choose your platform for local development:
 
 *Choose your platform path above, then follow these sequential steps:*
 
-### [Part 1: Setup and Understanding](docs/{platform}/part-1-setup-and-understanding.md) (30 minutes)
+### [Part 1: Setup and Understanding] (30 minutes)
 1. Understanding MCP and Architecture Patterns
 2. Environment Setup and Prerequisites  
 3. Project Structure and Dependencies
 
-### [Part 2: Local Development](docs/{platform}/part-2-local-development.md) (45 minutes)
+### [Part 2: Local Development] (45 minutes)
 1. Building the MCP Server Core
 2. Creating Educational Tools (markdown review, dependency check)
 3. Implementing Production AI Tool Architecture
 4. Testing Locally with Azure Functions
 
-### [Part 3: Azure Deployment](docs/{platform}/part-3-azure-deployment.md) (30 minutes)
+### [Part 3: Azure Deployment] (30 minutes)
 1. Infrastructure as Code with Bicep
 2. Deploying to Azure Functions
 3. Monitoring and Troubleshooting
 
-### [Part 4: GitHub Copilot Integration](docs/{platform}/part-4-copilot-integration.md) (30 minutes)
+### [Part 4: GitHub Copilot Integration] (30 minutes)
 1. Configuring MCP in VS Code
 2. Testing Tool Discovery and Usage
 3. Advanced Integration Patterns
 
-### [Part 5: AI Integration](docs/{platform}/part-5-ai-integration.md) (45 minutes) 🤖
+### [Part 5: AI Integration](45 minutes) 🤖
 1. Setting Up Azure AI Foundry
 2. Implementing Real AI Analysis
 3. Comparing Educational vs Production Tools
