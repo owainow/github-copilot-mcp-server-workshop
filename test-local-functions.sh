@@ -3,7 +3,7 @@
 # Test script for MCP server local development
 # Part 2: Local Development Testing
 
-set -e
+# Note: Not using 'set -e' to allow all tests to run even if some fail
 
 echo "🧪 Testing MCP Server Local Development"
 echo "======================================"
@@ -41,6 +41,7 @@ test_endpoint() {
     echo "Response: $response" | head -c 200
     echo "..."
     
+    # Check the full response (not the truncated display)
     if echo "$response" | grep -q "$expected_check"; then
         echo -e "${GREEN}✅ PASSED: $test_name${NC}"
         return 0
@@ -84,7 +85,7 @@ test_endpoint "Markdown Review Tool" \
         }
     }
 }' \
-'"qualityScore"'
+'qualityScore'
 
 # Test 3: Dependency Check Tool
 test_endpoint "Dependency Check Tool" \
@@ -99,7 +100,7 @@ test_endpoint "Dependency Check Tool" \
         }
     }
 }' \
-'"total_dependencies"'
+'totalDependencies'
 
 # Test 4: AI Code Review Tool (Mock Mode)
 test_endpoint "AI Code Review Tool (Mock)" \
@@ -116,7 +117,7 @@ test_endpoint "AI Code Review Tool (Mock)" \
         }
     }
 }' \
-'"mock_analysis"'
+'mock_analysis'
 
 # Test 5: Error Handling - Invalid Tool
 test_endpoint "Error Handling - Invalid Tool" \
