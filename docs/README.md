@@ -15,27 +15,27 @@ This comprehensive workshop teaches you to build, deploy, and integrate a custom
 
 ## 📚 Workshop Structure
 
-### **Part 1: [Understanding MCP & Workshop Setup](part-1-understanding-mcp-and-setup.md)**
+### **Part 1: [Understanding MCP & Workshop Setup]**
 - **Objective**: Learn MCP concepts and prepare your development environment
 - **Topics**: MCP protocol basics, Azure Functions overview, prerequisites setup
 - **Outcome**: Ready development environment with project structure
 
-### **Part 2: [Local Development & Building MCP Server](part-2-local-development-and-building.md)**
+### **Part 2: [Local Development & Building MCP Server]**
 - **Objective**: Build and test the MCP server locally with three custom tools
 - **Topics**: Tool implementation patterns, local testing, MCP protocol implementation
 - **Outcome**: Working MCP server with educational and production tool patterns
 
-### **Part 3: [Azure Deployment & Architecture Deep Dive](part-3-azure-deployment-and-architecture.md)**
+### **Part 3: [Azure Deployment & Architecture Deep Dive]**
 - **Objective**: Deploy MCP server to Azure Functions for global serverless hosting
 - **Topics**: Infrastructure as code, serverless deployment, monitoring setup
 - **Outcome**: Production-deployed MCP server with observability
 
-### **Part 4: [GitHub Copilot Integration](part-4-copilot-integration.md)**
+### **Part 4: [GitHub Copilot Integration]**
 - **Objective**: Connect your Azure-hosted MCP server to GitHub Copilot in VS Code
 - **Topics**: VS Code configuration, MCP client setup, integration testing
 - **Outcome**: GitHub Copilot using your custom tools in real development workflows
 
-### **Part 5: [AI Integration with Azure AI Foundry](part-5-ai-integration-with-azure-ai-foundry.md)**
+### **Part 5: [AI Integration with Azure AI Foundry]**
 - **Objective**: Transform mock tools into real AI-powered analysis using Azure AI
 - **Topics**: Azure AI Foundry setup, model deployment, production AI integration
 - **Outcome**: Production-ready AI-enhanced MCP server with intelligent code analysis
