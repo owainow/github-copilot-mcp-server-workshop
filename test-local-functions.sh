@@ -84,7 +84,7 @@ test_endpoint "Markdown Review Tool" \
         }
     }
 }' \
-'"quality_score"'
+'"qualityScore"'
 
 # Test 3: Dependency Check Tool
 test_endpoint "Dependency Check Tool" \
@@ -116,7 +116,7 @@ test_endpoint "AI Code Review Tool (Mock)" \
         }
     }
 }' \
-'"mock_ai_analysis"'
+'"mock_analysis"'
 
 # Test 5: Error Handling - Invalid Tool
 test_endpoint "Error Handling - Invalid Tool" \

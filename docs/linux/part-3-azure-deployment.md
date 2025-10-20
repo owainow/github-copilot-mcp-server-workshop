@@ -185,6 +185,8 @@ echo "MCP Endpoint: $FUNCTION_URL/api/mcp"
 
 ### 2. Test Deployed Functions
 
+Unlike our local functions lets create a test script so that we can see what we are testing this time.
+
 Create a bash test script for the deployed functions:
 
 ```bash
